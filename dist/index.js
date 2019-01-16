@@ -4,21 +4,26 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-import { observable, computed, isObservable } from 'mobx';
+import { observable, computed, autorun } from 'mobx';
 import { render } from './render';
-const field = observable;
-function extendComplexTypeMetadata(baseTypeMetadata, derrivedTypeMetadata) {
-    let properties = {};
-    if (baseTypeMetadata && baseTypeMetadata.properties) {
-        properties = Object.assign({}, baseTypeMetadata.properties);
+import "reflect-metadata";
+export const GW_METADATA_MODEL_FIELDS = Symbol();
+function field(target, key, baseDescriptor) {
+    let fields = Reflect.getOwnMetadata(GW_METADATA_MODEL_FIELDS, target);
+    if (fields == null) {
+        let baseTypeFields = Reflect.getMetadata(GW_METADATA_MODEL_FIELDS, target);
+        if (baseTypeFields) {
+            fields = [...baseTypeFields, key];
+        }
+        else {
+            fields = [key];
+        }
+        Reflect.defineMetadata(GW_METADATA_MODEL_FIELDS, fields, target);
     }
-    if (derrivedTypeMetadata && derrivedTypeMetadata.properties) {
-        properties = Object.assign({}, properties, derrivedTypeMetadata.properties);
+    else if (fields.indexOf(key) < 0) {
+        fields.push(key);
     }
-    return {
-        name: derrivedTypeMetadata.name,
-        properties: properties
-    };
+    return observable(target, key, baseDescriptor);
 }
 class StateModelNode {
 }
@@ -31,42 +36,65 @@ class ValueField extends Field {
         if (value !== oldValue) {
             this.fireOnValueChanged(value, oldValue);
         }
+        return oldValue;
+    }
+    get modified() {
+        return this.value !== this.originalValue;
     }
     fireOnValueChanged(value, oldValue) {
+    }
+    updateOriginalValue() {
+        this.originalValue = this.value;
     }
 }
 __decorate([
     observable
 ], ValueField.prototype, "value", void 0);
+__decorate([
+    observable
+], ValueField.prototype, "originalValue", void 0);
+__decorate([
+    computed
+], ValueField.prototype, "modified", null);
 class TextField extends ValueField {
+}
+class IntegerField extends ValueField {
 }
 class ComplexType extends StateModelNode {
     constructor() {
         super();
-        let metadata = this.getMetadata();
-        if (!metadata) {
-            throw new Error("A complex type needs to defina a static property metadata of type IComplexTypeMetadata: " + this.constructor.name);
-        }
-    }
-    getMetadata() {
-        return this.constructor.metaData;
+        this.id = new IntegerField();
     }
     init() {
         this.initFields();
-        this.initStaticMetadata();
-    }
-    initStaticMetadata() {
     }
     initFields() {
-        Object.getOwnPropertyNames(this).forEach((propertyName) => {
+        let fieldNames = this.getFieldNames();
+        fieldNames.forEach((propertyName) => {
             let propertyValue = this[propertyName];
-            if (isObservable(propertyValue)) {
-                propertyValue.fieldName = propertyName;
-                propertyValue.$parent = this;
-            }
+            propertyValue.$parent = this;
         });
     }
+    getFieldNames() {
+        return Reflect.getMetadata(GW_METADATA_MODEL_FIELDS, this);
+    }
+    get modified() {
+        return this.getFieldNames().some((fieldName => {
+            return this[fieldName].modified;
+        }));
+    }
+    updateOriginalValue() {
+        return this.getFieldNames().some((fieldName => {
+            return this[fieldName].updateOriginalValue();
+        }));
+    }
 }
+__decorate([
+    field
+], ComplexType.prototype, "id", void 0);
+__decorate([
+    computed
+], ComplexType.prototype, "modified", null);
 class ComplexField extends Field {
     constructor(_itemCtor) {
         super();
@@ -75,10 +103,16 @@ class ComplexField extends Field {
         this.value.$parent = this;
         this.value.init();
     }
-    getItemMetadata() {
-        return this._itemCtor.metaData;
+    updateOriginalValue() {
+        this.value.updateOriginalValue();
+    }
+    get modified() {
+        return this.value.modified;
     }
 }
+__decorate([
+    computed
+], ComplexField.prototype, "modified", null);
 __decorate([
     field
 ], ComplexField.prototype, "value", void 0);
@@ -93,15 +127,15 @@ class ArrayField extends Field {
     }
     append(item) {
         if (item == null) {
-            item = new this._itemCtor();
+            let ctor = this._itemCtor;
+            item = new ctor();
             item.$parent = this;
             item.init();
         }
         this._items.push(item);
         return item;
     }
-    getItemsMetadata() {
-        return this._itemCtor.metaData;
+    updateOriginalValue() {
     }
 }
 __decorate([
@@ -116,9 +150,6 @@ class Address extends ComplexType {
         this.line1 = new TextField();
     }
 }
-Address.metaData = {
-    name: "Address"
-};
 __decorate([
     field
 ], Address.prototype, "line1", void 0);
@@ -128,14 +159,6 @@ class ExtendedAddress extends Address {
         this.line2 = new TextField();
     }
 }
-ExtendedAddress.metaData = extendComplexTypeMetadata(Address.metaData, {
-    name: "ExtendedAddress",
-    properties: {
-        line1: {
-            label: "abc"
-        }
-    }
-});
 __decorate([
     field
 ], ExtendedAddress.prototype, "line2", void 0);
@@ -147,16 +170,12 @@ class Customer extends ComplexType {
         this.addresses = new ArrayField(Address);
     }
 }
-Customer.metaData = {
-    name: "Customer",
-    properties: {
-        name
-    }
-};
 __decorate([
+    Reflect.metadata("test", "Hello"),
     field
 ], Customer.prototype, "name", void 0);
 __decorate([
+    Reflect.metadata("test", "Hello Base"),
     field
 ], Customer.prototype, "address", void 0);
 __decorate([
@@ -170,13 +189,11 @@ class SpecialCustomer extends Customer {
         this.addresses = new ArrayField(ExtendedAddress);
     }
 }
-SpecialCustomer.metaData = extendComplexTypeMetadata(Customer.metaData, {
-    name: "SpecialCustomer"
-});
 __decorate([
     field
 ], SpecialCustomer.prototype, "matchcode", void 0);
 __decorate([
+    Reflect.metadata("test", "Hello Derived"),
     field
 ], SpecialCustomer.prototype, "address", void 0);
 __decorate([
@@ -189,9 +206,6 @@ class ListDetailViewModel extends ComplexType {
         this.items = new ArrayField(listCtor);
     }
 }
-ListDetailViewModel.metaData = {
-    name: "ListDetailViewModel"
-};
 __decorate([
     field
 ], ListDetailViewModel.prototype, "items", void 0);
@@ -206,6 +220,13 @@ class ListDetailView {
 new ListDetailView(Customer, SpecialCustomer);
 const customer = new SpecialCustomer();
 customer.init();
+console.log(customer.getFieldNames());
+console.log(customer.address.value.getFieldNames());
+autorun(() => {
+    console.log(customer.modified);
+});
+customer.address.value.line1.value = "hi";
+customer.address.value.line1.value = undefined;
 let secs = 0;
 setInterval(() => {
     secs++;

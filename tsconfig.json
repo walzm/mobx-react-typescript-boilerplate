@@ -3,6 +3,7 @@
     "target": "es6",
     "moduleResolution": "node",
     "removeComments": true,
+    "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "jsx": "react",
     "outDir": "dist",
