@@ -2,6 +2,7 @@ import { ComplexType, ArrayField, field, IntegerField, TextField, ReferenceField
 import { CustomerTransportModel } from "./customerData";
 import { autorun } from "mobx";
 import { observer } from "mobx-react";
+import { render } from "./render";
 
 export class Address extends ComplexType {
     @field({
@@ -218,12 +219,12 @@ export class CustomerExt extends Customer {
 let log = null;
 
 function measure(name: string, func: () => any) {
+    console.profile(name);
     let start = performance.now();
-    console.log("----> " + name);
-    performance.mark(name);
     let ret = func();
     let end = performance.now();
-    console.log("<--- " + (end - start) + "ms");
+    console.log(name + " took:" + (end - start) + "ms");
+    console.profileEnd();
     return ret;
 }
 let customer = createModelInstance(CustomerExt);
@@ -235,7 +236,7 @@ for (let a = 0; a < 5; a++) {
     model.addresses = [...model.addresses, ...model.addresses];
 }
 log && log("Addresses: " + model.addresses.length);
-customer.applyTransportModel(model);
+measure("apply transport model", () => customer.applyTransportModel(model));
 customer.updateOriginalValue();
 let snap2 = measure("write snapshot 2", () => customer.writeSnapshot());
 //let tm2 = measure("write transport model 2", () => customer.writeTransportModel());
@@ -279,7 +280,6 @@ function hook(customer: CustomerExt) {
     })
     log && log("hook end");
 }
-console.profile("label for profile");
 
 
 
@@ -292,9 +292,11 @@ log && log(counter);
 customer2 = createModelInstance(CustomerExt);
 hook(customer2);
 measure("apply snapshot 4", () => customer2.applySnapshot(snap2));
+
 log && log(counter);
 log && log(snap2)
 log && log(customer2)
+console.log(customer2);
 let org = customer2.addresses.items[4].address.value.line1.value;
 measure("set value 1", () => {
     customer2.addresses.items[4].address.value.line1.value = "hello"
@@ -305,4 +307,30 @@ measure("set value 2", () => {
 });
 log && log(counter);
 
-console.profileEnd();
+autorun(() => {
+    console.log(customer.modified);
+});
+
+let secs = 0;
+setInterval(() => {
+    secs++;
+}, 1000)
+
+setTimeout(() => {
+}, 2000)
+
+setTimeout(() => {
+}, 10000)
+
+setInterval(() => {
+    let num = customer.addresses.items.length;
+    if (num > 0) {
+        customer.addresses.items[num - 1].address.value.line1.value = "done";
+    }
+    let a = customer.addresses.append();
+    a.address.value.line1.value = "number: " + num;
+    a.address.value.line2.setValue(a.address.value.line1.value);
+
+}, 3000)
+
+render(customer);

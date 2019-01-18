@@ -1,13 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react';
+import { CustomerExt } from './test2';
 
 @observer
-class TextRenderer extends React.Component<{ customer: any }, {}> {
+class TextRenderer extends React.Component<{ customer: CustomerExt }, {}> {
     render() {
-        let x = this.props.customer.addresses.items.map((address, idx) => <div key={idx}>{address.line1.value}</div>);
+        let x = this.props.customer.addresses.items.map((a, idx) => <div key={idx}>{a.address.value.line1.value}</div>);
         return (
-            <div>{this.props.customer.name.value} : {this.props.customer.address.value.line1.value} : {x} </div>
+            <div>{this.props.customer.label.value} - {x} </div>
         )
     }
 }

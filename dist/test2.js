@@ -301,9 +301,11 @@ __decorate([
         canDelete: true
     })
 ], CustomerExt.prototype, "addresses", void 0);
+let log = null;
 function measure(name, func) {
     let start = performance.now();
     console.log("----> " + name);
+    performance.mark(name);
     let ret = func();
     let end = performance.now();
     console.log("<--- " + (end - start) + "ms");
@@ -316,13 +318,13 @@ let model = JSON.parse(JSON.stringify(CustomerTransportModel));
 for (let a = 0; a < 5; a++) {
     model.addresses = [...model.addresses, ...model.addresses];
 }
-console.log("Addresses: " + model.addresses.length);
+log && log("Addresses: " + model.addresses.length);
 customer.applyTransportModel(model);
 customer.updateOriginalValue();
 let snap2 = measure("write snapshot 2", () => customer.writeSnapshot());
 let counter = 0;
 function hook(customer) {
-    console.log("hook start");
+    log && log("hook start");
     counter = 0;
     autorun(() => {
         customer.addresses.items.forEach((item, index) => {
@@ -352,26 +354,28 @@ function hook(customer) {
     });
     autorun(() => {
         let val = customer.modified;
-        console.log(val);
+        log && log(val);
     });
-    console.log("hook end");
+    log && log("hook end");
 }
 let customer2 = createModelInstance(CustomerExt);
 measure("apply snapshot 1", () => customer2.applySnapshot(snap2));
 measure("apply snapshot 2", () => customer2.applySnapshot(snap2));
 hook(customer2);
 measure("apply snapshot 3", () => customer2.applySnapshot(snap2));
-console.log(counter);
+log && log(counter);
 customer2 = createModelInstance(CustomerExt);
 hook(customer2);
 measure("apply snapshot 4", () => customer2.applySnapshot(snap2));
-console.log(counter);
+log && log(counter);
+log && log(snap2);
+log && log(customer2);
 let org = customer2.addresses.items[4].address.value.line1.value;
 measure("set value 1", () => {
     customer2.addresses.items[4].address.value.line1.value = "hello";
 });
-console.log(counter);
+log && log(counter);
 measure("set value 2", () => {
     customer2.addresses.items[4].address.value.line1.value = org;
 });
-console.log(counter);
+log && log(counter);

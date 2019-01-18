@@ -16,6 +16,7 @@ export function createModelInstance(complexType) {
     return instance;
 }
 export function observableField(target, key, baseDescriptor) {
+    return observable(target, key, baseDescriptor);
 }
 export function field(fieldMetadata) {
     return function (target, key, baseDescriptor) {
@@ -658,15 +659,18 @@ export class ArrayField extends Field {
     }
     applySnapshot(snapshot) {
         super.applySnapshot(snapshot);
-        let newItems = snapshot.items && snapshot.items && snapshot.items.map && snapshot.items.map((snapshotItem) => {
-            let item = createModelInstance(this._itemCtor);
+        snapshot.items && snapshot.items && snapshot.items.map && snapshot.items.forEach((snapshotItem, index) => {
+            let item;
+            if (index < this._items.length) {
+                item = this._items[index];
+            }
+            else {
+                item = createModelInstance(this._itemCtor);
+                item.$parent = this;
+            }
             item.applySnapshot(snapshotItem);
-            item.$parent = this;
-            return item;
+            this._items.push(item);
         });
-        if (newItems != null) {
-            this._items = newItems;
-        }
         this.originalItemCount = snapshot.originalItemCount;
         this.disabled = snapshot.disabled;
         this.readOnly = snapshot.readOnly;

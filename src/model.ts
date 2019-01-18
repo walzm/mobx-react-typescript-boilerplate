@@ -1,4 +1,3 @@
-import { observable, computed, isObservable, autorun, transaction } from 'mobx';
 import "reflect-metadata";
 
 export const GW_METADATA_MODEL_FIELDS = Symbol();
@@ -46,10 +45,6 @@ export function createModelInstance<TComplexType extends IComplexType>(complexTy
     return instance;
 }
 
-export function observableField(target: any, key: string | symbol, baseDescriptor?: PropertyDescriptor) {
-    return observable(target, key, baseDescriptor);
-}
-
 export function field(fieldMetadata?: IFieldMetadata) {
     return function (target: any, key: string | symbol, baseDescriptor?: PropertyDescriptor) {
         let fields = Reflect.getOwnMetadata(GW_METADATA_MODEL_FIELDS, target);
@@ -74,8 +69,6 @@ export function field(fieldMetadata?: IFieldMetadata) {
             };
         }
         Reflect.defineMetadata(GW_METADATA_MODEL_FIELD_METADATA, fieldMetadata, target, key);
-
-        return observable(target, key, baseDescriptor);
     }
 }
 export const enum MessageSource {
@@ -113,10 +106,10 @@ export interface IField extends IStateModelNode {
 }
 export abstract class Field extends StateModelNode implements IField {
     abstract readonly modified: boolean;
-    @observableField hidden: boolean;
-    @observableField label: string;
-    @observableField shortLabel: string;
-    @observableField messages = [];
+    hidden: boolean;
+    label: string;
+    shortLabel: string;
+    messages = [];
     abstract updateOriginalValue();
     applyMetadata(metadata: IFieldMetadata) {
         if (metadata.label) {
@@ -152,10 +145,10 @@ export interface IActionField extends IField {
 }
 
 export class ActionField extends Field implements IActionField {
-    @observableField modified = false;
-    @observableField disabled: boolean;
-    @observableField icon: string;
-    @observableField hideLabel: boolean;
+    modified = false;
+    disabled: boolean;
+    icon: string;
+    hideLabel: boolean;
     applyMetadata(metadata: IFieldMetadata) {
         super.applyMetadata(metadata);
         if (metadata.disabled != null) {
@@ -203,11 +196,11 @@ export interface IValueField<TValue> extends IField {
     setValue(value: TValue): TValue;
 }
 export abstract class ValueField<TValue> extends Field implements IValueField<TValue> {
-    @observableField value: TValue;
-    @observableField originalValue: TValue;
-    @observableField required: boolean;
-    @observableField readOnly: boolean;
-    @observableField disabled: boolean;
+    value: TValue;
+    originalValue: TValue;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
     public setValue(value: TValue): TValue {
         let oldValue = this.value;
         this.value = value;
@@ -216,7 +209,7 @@ export abstract class ValueField<TValue> extends Field implements IValueField<TV
         }
         return oldValue;
     }
-    @computed get modified(): boolean {
+    get modified(): boolean {
         return this.value !== this.originalValue;
     }
     protected fireOnValueChanged(value, oldValue) {
@@ -283,9 +276,9 @@ export interface ITextField extends IValueField<string> {
 
 }
 export class TextField extends ValueField<string> implements ITextField {
-    @observableField minLength: number;
-    @observableField maxLength: number;
-    @observableField subType: FieldSubType;
+    minLength: number;
+    maxLength: number;
+    subType: FieldSubType;
     applyMetadata(metadata: IFieldMetadata) {
         super.applyMetadata(metadata);
         if (metadata.minLength != null) {
@@ -319,10 +312,10 @@ export interface ITextLocalizedField extends IValueField<Map<string, string>> {
 
 }
 export class TextLocalizedField extends ValueField<Map<string, string>> implements ITextLocalizedField {
-    @observableField minLength: number;
-    @observableField maxLength: number;
-    @observableField subType: FieldSubType;
-    @computed get modified(): boolean {
+    minLength: number;
+    maxLength: number;
+    subType: FieldSubType;
+    get modified(): boolean {
         if (this.value.size !== this.originalValue.size) {
             return true;
         }
@@ -384,8 +377,8 @@ export interface IIntegerField extends IValueField<number> {
     maxValue: number;
 }
 export class IntegerField extends ValueField<number> implements IIntegerField {
-    @observableField minValue: number;
-    @observableField maxValue: number;
+    minValue: number;
+    maxValue: number;
     applyMetadata(metadata: IFieldMetadata) {
         super.applyMetadata(metadata);
         if (metadata.minValue != null) {
@@ -414,10 +407,10 @@ export interface IDecimalField extends IValueField<number> {
     maxValue: number;
 }
 export class DecimalField extends ValueField<number> implements IDecimalField {
-    @observableField minDecimals: number;
-    @observableField maxDecimals: number;
-    @observableField minValue: number;
-    @observableField maxValue: number;
+    minDecimals: number;
+    maxDecimals: number;
+    minValue: number;
+    maxValue: number;
     applyMetadata(metadata: IFieldMetadata) {
         super.applyMetadata(metadata);
         if (metadata.minDecimals != null) {
@@ -462,7 +455,7 @@ export interface IOptionField extends IValueField<number> {
     options: IOptionFieldOption[];
 }
 export class OptionField extends ValueField<number> implements IOptionField {
-    @observableField options = [];
+    options = [];
     applyMetadata(metadata: IFieldMetadata) {
         super.applyMetadata(metadata);
     }
@@ -484,10 +477,10 @@ export interface IReferenceField extends IValueField<number> {
     filter: string;
 }
 export class ReferenceField extends ValueField<number> implements IReferenceField {
-    @observableField displayLabel: string;
-    @observableField description: string;
-    @observableField serviceName: string;
-    @observableField filter: string;
+    displayLabel: string;
+    description: string;
+    serviceName: string;
+    filter: string;
     applyMetadata(metadata: IFieldMetadata) {
         super.applyMetadata(metadata);
         if (metadata.serviceName != null) {
@@ -557,7 +550,7 @@ export class ComplexType extends StateModelNode implements IComplexType {
     public getFieldNames(): string[] {
         return Reflect.getMetadata(GW_METADATA_MODEL_FIELDS, this);
     }
-    @computed public get modified(): boolean {
+    public get modified(): boolean {
         return this.getFieldNames().some((fieldName => {
             let modified = this[fieldName].modified;
             if (modified) {
@@ -579,12 +572,10 @@ export class ComplexType extends StateModelNode implements IComplexType {
         }, {});
     }
     public applySnapshot(snapshot: any) {
-        transaction(() => {
-            this.getFieldNames().forEach((fieldName) => {
-                if (fieldName in snapshot) {
-                    this[fieldName].applySnapshot(snapshot[fieldName]);
-                }
-            });
+        this.getFieldNames().forEach((fieldName) => {
+            if (fieldName in snapshot) {
+                this[fieldName].applySnapshot(snapshot[fieldName]);
+            }
         });
     }
     writeTransportModel() {
@@ -618,10 +609,10 @@ export class ComplexField<TComplexType extends IComplexType> extends Field imple
     updateOriginalValue() {
         this.value.updateOriginalValue();
     }
-    @computed public get modified(): boolean {
+    public get modified(): boolean {
         return this.value.modified;
     }
-    @observableField readonly value: TComplexType;
+    readonly value: TComplexType;
     writeSnapshot() {
         let snapshot = super.writeSnapshot() as any;
         snapshot.value = this.value.writeSnapshot();
@@ -661,25 +652,25 @@ export class ArrayField<TComplexType extends IComplexType> extends Field impleme
     constructor(private _itemCtor: new () => TComplexType) {
         super();
     }
-    @observableField originalItemCount: number = 0;
+    originalItemCount: number = 0;
 
-    @observableField disabled: boolean;
-    @observableField readOnly: boolean;
-    @observableField insertDisabled: boolean;
-    @observableField deleteDisabled: boolean;
-    @observableField canInsert: boolean;
-    @observableField canDelete: boolean;
+    disabled: boolean;
+    readOnly: boolean;
+    insertDisabled: boolean;
+    deleteDisabled: boolean;
+    canInsert: boolean;
+    canDelete: boolean;
 
-    @observableField skip: number;
-    @observableField take: number;
-    @observableField totalCount: number;
-    @observableField loading: boolean;
-    @observableField serverPaged: boolean
+    skip: number;
+    take: number;
+    totalCount: number;
+    loading: boolean;
+    serverPaged: boolean
 
-    @observableField
+
     private _items: TComplexType[] = [];
 
-    @computed get items(): ReadonlyArray<TComplexType> {
+    get items(): ReadonlyArray<TComplexType> {
         return this._items;
     }
     public append(item?: TComplexType): TComplexType {
@@ -691,7 +682,7 @@ export class ArrayField<TComplexType extends IComplexType> extends Field impleme
         this._items.push(item);
         return item;
     }
-    @computed public get modified(): boolean {
+    public get modified(): boolean {
         if (this.originalItemCount !== this._items.length) {
             return true;
         }
@@ -744,18 +735,28 @@ export class ArrayField<TComplexType extends IComplexType> extends Field impleme
         return snapshot;
     }
     applySnapshot(snapshot: any) {
+        if (!snapshot) {
+            return;
+        }
         super.applySnapshot(snapshot);
-        snapshot.items && snapshot.items && snapshot.items.map && snapshot.items.forEach((snapshotItem, index) => {
+        if (!Array.isArray(snapshot.items)) {
+            throw new Error("Snapshot <items> must be of type array");
+        }
+
+        snapshot.items.forEach((snapshotItem, index) => {
             let item;
             if (index < this._items.length) {
                 item = this._items[index];
             } else {
                 item = createModelInstance(this._itemCtor);
                 (item as any).$parent = this;
+                this._items.push(item);
             }
             item.applySnapshot(snapshotItem);
-            this._items.push(item);
         });
+        if (snapshot.items.length < this._items.length) {
+            this._items = this._items.slice(0, snapshot.items.length);
+        }
 
         this.originalItemCount = snapshot.originalItemCount;
         this.disabled = snapshot.disabled;
@@ -777,14 +778,27 @@ export class ArrayField<TComplexType extends IComplexType> extends Field impleme
         });
     }
     applyTransportModel(transportModel: any) {
-        let newItems = transportModel && transportModel.map && transportModel.map((transportModelItem) => {
-            let item = createModelInstance(this._itemCtor);
+        if (!transportModel) {
+            this._items = [];
+            return;
+        }
+        if (!Array.isArray(transportModel)) {
+            throw new Error("Transport model must be of type array");
+        }
+        transportModel.forEach((transportModelItem, index) => {
+            let item;
+            if (index < this._items.length) {
+                item = this._items[index];
+            } else {
+                item = createModelInstance(this._itemCtor);
+                (item as any).$parent = this;
+                this._items.push(item);
+            }
             item.applyTransportModel(transportModelItem);
-            (item as any).$parent = this;
             return item;
         });
-        if (newItems != null) {
-            this._items = newItems;
+        if (transportModel.length < this._items.length) {
+            this._items = this._items.slice(0, transportModel.length);
         }
     }
 }
