@@ -1,13 +1,14 @@
-import { IFieldAllMetadata } from "./modelBase";
-import { FieldMetadataProperties, IFieldMetadata, IField, Field } from "./baseField";
+import { IFieldAllMetadata } from "./commonModelTypes";
+import { BaseFieldMetadataProperties, IBaseFieldMetadata, IBaseField, BaseField } from "./baseField";
 
-export interface IBaseValueField<TValue> extends IField {
+export interface IBaseValueField<TValue> extends IBaseField {
     setDisabled(disabled: boolean);
     setRequired(required: boolean);
     setValue(value: TValue);
+    getValue(): TValue;
 }
 
-export interface IBaseValueFieldMetaData extends IFieldMetadata {
+export interface IBaseValueFieldMetaData extends IBaseFieldMetadata {
     disabled: boolean;
     required: boolean;
 }
@@ -15,12 +16,12 @@ export interface IBaseValueFieldState<TValue> extends IBaseValueFieldMetaData {
     value: TValue;
     originalValue: TValue;
 }
-export const BaseValueFieldMetadataProperties: ReadonlyArray<keyof IBaseValueFieldMetaData> = [...FieldMetadataProperties,
+export const BaseValueFieldMetadataProperties: ReadonlyArray<keyof IBaseValueFieldMetaData> = [...BaseFieldMetadataProperties,
     "disabled",
     "required"
 ];
 export const BaseValueFieldStateProperties: ReadonlyArray<keyof IBaseValueFieldState<any>> = [...BaseValueFieldMetadataProperties, "value", "originalValue"];
-export abstract class BaseValueField<TValue> extends Field implements IBaseValueField<TValue> {
+export abstract class BaseValueField<TValue> extends BaseField implements IBaseValueField<TValue> {
     abstract state: IBaseValueFieldState<TValue>;
     setDisabled(disabled: boolean) {
         if (disabled !== this.state.disabled) {
@@ -45,6 +46,9 @@ export abstract class BaseValueField<TValue> extends Field implements IBaseValue
                 value
             }
         }
+    }
+    getValue() {
+        return this.state.value;
     }
     abstract applyMetadata(metadata: IFieldAllMetadata);
     abstract applySnapshot(snapshot: any);

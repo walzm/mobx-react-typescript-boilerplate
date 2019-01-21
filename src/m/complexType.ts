@@ -1,5 +1,5 @@
 import { IIdField, IdField } from "./idField";
-import { IStateModelNode, GW_METADATA_MODEL_FIELD_METADATA, GW_METADATA_MODEL_FIELDS, IFieldAllMetadata } from "./modelBase";
+import { IStateModelNode, GW_METADATA_MODEL_FIELD_METADATA, GW_METADATA_MODEL_FIELDS, IFieldAllMetadata } from "./commonModelTypes";
 import { observable } from "mobx";
 
 export function field(fieldMetadata?: IFieldAllMetadata) {

@@ -1,7 +1,7 @@
-import { IMessage, IStateModelNode, IFieldAllMetadata } from "./modelBase";
+import { IMessage, IStateModelNode, IFieldAllMetadata } from "./commonModelTypes";
 
-export interface IField extends IStateModelNode {
-    state: IFieldState;
+export interface IBaseField extends IStateModelNode {
+    state: IBaseFieldState;
     setLabel(label: string);
     setShortLabel(shortLabel: string);
     setHidden(hidden: boolean);
@@ -10,26 +10,26 @@ export interface IField extends IStateModelNode {
     applyMetadata(metadata: IFieldAllMetadata);
 }
 
-export interface IFieldMetadata {
+export interface IBaseFieldMetadata {
     hidden: boolean;
     label: string;
     shortLabel: string;
     messages: IMessage[];
 }
 
-export interface IFieldState extends IFieldMetadata {
+export interface IBaseFieldState extends IBaseFieldMetadata {
 }
 
-export const FieldMetadataProperties: ReadonlyArray<keyof IFieldMetadata> = [
+export const BaseFieldMetadataProperties: ReadonlyArray<keyof IBaseFieldMetadata> = [
     "label",
     "shortLabel",
     "hidden",
     "messages",
 ];
 
-export abstract class Field {
+export abstract class BaseField {
     $parent: IStateModelNode;
-    abstract state: IFieldState;
+    abstract state: IBaseFieldState;
     setLabel(label: string) {
         if (label !== this.state.label) {
             this.state = {

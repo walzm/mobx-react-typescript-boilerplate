@@ -10,8 +10,10 @@ export enum FieldSubType {
 
 export interface IFieldAllMetadata {
     name?: string;
-    label?: string;
-    shortLabel?: string;
+
+    label?: any;
+    shortLabel?: any;
+
     hideLabel?: boolean;
     icon?: string;
     hidden?: boolean;
@@ -32,7 +34,7 @@ export interface IFieldAllMetadata {
     deleteDisabled?: boolean;
     serverPaged?: boolean;
     subType?: FieldSubType;
-    options: { id: number; label: string }[];
+    options?: { id: number; label: string }[];
 };
 
 

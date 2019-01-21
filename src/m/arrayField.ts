@@ -1,13 +1,13 @@
-import { IFieldAllMetadata } from "./modelBase";
+import { IFieldAllMetadata } from "./commonModelTypes";
 import { observable } from "mobx";
-import { FieldMetadataProperties, IFieldMetadata, IField, Field } from "./baseField";
+import { BaseFieldMetadataProperties, IBaseFieldMetadata, IBaseField, BaseField } from "./baseField";
 import { IComplexType, createModelInstance } from "./complexType";
 
 export type ReadonlyArrayInnerType<T> = T extends ReadonlyArray<infer U> ? U : never;
 export type ArrayFieldInnerType<T> = T extends IArrayField<infer U> ? U : never;
 
 
-export interface IArrayField<TComplexType extends IComplexType> extends IField {
+export interface IArrayField<TComplexType extends IComplexType> extends IBaseField {
     setDisabled(disabled: boolean);
     setReadonly(readonly: boolean);
     setInsertDisabled(insertDisabled: boolean);
@@ -24,7 +24,7 @@ export interface IArrayField<TComplexType extends IComplexType> extends IField {
     readonly items: ReadonlyArray<TComplexType>;
 }
 
-interface IArrayFieldMetaData extends IFieldMetadata {
+interface IArrayFieldMetaData extends IBaseFieldMetadata {
     disabled: boolean;
     readonly: boolean;
     insertDisabled: boolean;
@@ -40,7 +40,7 @@ interface IArrayFieldMetaData extends IFieldMetadata {
 }
 interface IArrayFieldState extends IArrayFieldMetaData {
 }
-const ArrayFieldMetadataProperties: ReadonlyArray<keyof IArrayFieldMetaData> = [...FieldMetadataProperties,
+const ArrayFieldMetadataProperties: ReadonlyArray<keyof IArrayFieldMetaData> = [...BaseFieldMetadataProperties,
     "disabled",
     "readonly",
     "insertDisabled",
@@ -56,7 +56,7 @@ const ArrayFieldMetadataProperties: ReadonlyArray<keyof IArrayFieldMetaData> = [
 ];
 
 const ArrayFieldStateProperties: ReadonlyArray<keyof IArrayFieldMetaData> = [...ArrayFieldMetadataProperties];
-export class ArrayField<TComplexType extends IComplexType> extends Field implements IArrayField<TComplexType> {
+export class ArrayField<TComplexType extends IComplexType> extends BaseField implements IArrayField<TComplexType> {
     @observable.ref
     state: IArrayFieldState = {
         label: null,

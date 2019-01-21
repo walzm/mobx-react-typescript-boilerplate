@@ -1,18 +1,18 @@
 import { IComplexType, createModelInstance } from "./complexType";
-import { IFieldMetadata, FieldMetadataProperties, Field, IField } from "./baseField";
+import { IBaseFieldMetadata, BaseFieldMetadataProperties, BaseField, IBaseField } from "./baseField";
 import { observable } from "mobx";
-import { IFieldAllMetadata } from "./modelBase";
+import { IFieldAllMetadata } from "./commonModelTypes";
 
-export interface IComplexField<TComplexType extends IComplexType> extends IField {
+export interface IComplexField<TComplexType extends IComplexType> extends IBaseField {
     readonly item: TComplexType;
 }
-interface IComplexFieldMetaData extends IFieldMetadata {
+interface IComplexFieldMetaData extends IBaseFieldMetadata {
 }
 interface IComplexFieldState extends IComplexFieldMetaData {
 }
-const ComplexFieldMetadataProperties: ReadonlyArray<keyof IComplexFieldMetaData> = [...FieldMetadataProperties];
+const ComplexFieldMetadataProperties: ReadonlyArray<keyof IComplexFieldMetaData> = [...BaseFieldMetadataProperties];
 
-export class ComplexField<TComplexType extends IComplexType> extends Field implements IComplexField<TComplexType> {
+export class ComplexField<TComplexType extends IComplexType> extends BaseField implements IComplexField<TComplexType> {
     @observable.ref
     state: IComplexFieldState = {
         label: null,

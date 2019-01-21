@@ -1,4 +1,4 @@
-import { IFieldAllMetadata, FieldSubType } from "./modelBase";
+import { IFieldAllMetadata, FieldSubType } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueFieldMetadataProperties, BaseValueFieldStateProperties, BaseValueField, IBaseValueFieldState } from "./baseValueField";
 
 type LocalizedTextLocalizedFieldValue = Map<string, string>;

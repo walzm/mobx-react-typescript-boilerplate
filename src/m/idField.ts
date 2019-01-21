@@ -1,4 +1,4 @@
-import { IFieldAllMetadata } from "./modelBase";
+import { IFieldAllMetadata } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueField, IBaseValueFieldState } from "./baseValueField";
 
 export interface IIdField extends IBaseValueField<number> {

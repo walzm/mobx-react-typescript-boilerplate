@@ -1,4 +1,4 @@
-import { IFieldAllMetadata } from "./modelBase";
+import { IFieldAllMetadata } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueFieldMetadataProperties, BaseValueFieldStateProperties, BaseValueField, IBaseValueFieldState } from "./baseValueField";
 
 export interface IBooleanField extends IBaseValueField<boolean> {

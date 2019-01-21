@@ -1,28 +1,28 @@
-import { IFieldAllMetadata } from "./modelBase";
+import { IFieldAllMetadata } from "./commonModelTypes";
 import { observable } from "mobx";
-import { FieldMetadataProperties, IFieldMetadata, IField, Field } from "./baseField";
+import { BaseFieldMetadataProperties, IBaseFieldMetadata, IBaseField, BaseField } from "./baseField";
 
-export interface IActionField extends IField {
+export interface IActionField extends IBaseField {
     setDisabled(state: boolean);
     setIcon(icon: string);
     setHideLabel(hideLabel: boolean);
     executeAction();
 }
 
-interface IActionFieldMetaData extends IFieldMetadata {
+interface IActionFieldMetaData extends IBaseFieldMetadata {
     disabled: boolean;
     icon: string;
     hideLabel: boolean;
 }
 interface IActionFieldState extends IActionFieldMetaData {
 }
-const ActionFieldMetadataProperties: ReadonlyArray<keyof IActionFieldMetaData> = [...FieldMetadataProperties,
+const ActionFieldMetadataProperties: ReadonlyArray<keyof IActionFieldMetaData> = [...BaseFieldMetadataProperties,
     "disabled",
     "icon",
     "hideLabel"
 ];
 const ActionFieldStateProperties: ReadonlyArray<keyof IActionFieldMetaData> = [...ActionFieldMetadataProperties];
-export class ActionField extends Field implements IActionField {
+export class ActionField extends BaseField implements IActionField {
     @observable.ref
     state: IActionFieldState = {
         label: null,
