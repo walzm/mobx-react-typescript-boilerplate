@@ -1,5 +1,6 @@
 import { IFieldAllMetadata } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueFieldMetadataProperties, BaseValueFieldStateProperties, BaseValueField, IBaseValueFieldState } from "./baseValueField";
+import { observable } from "mobx";
 
 export interface IBooleanField extends IBaseValueField<boolean> {
 }
@@ -11,6 +12,7 @@ const BooleanFieldMetadataProperties: ReadonlyArray<keyof IBooleanFieldMetaData>
 ];
 const BooleanFieldStateProperties: ReadonlyArray<keyof IBooleanFieldState> = [...BooleanFieldMetadataProperties, ...BaseValueFieldStateProperties];
 export class BooleanField extends BaseValueField<boolean> implements IBooleanField {
+    @observable.ref
     state: IBooleanFieldState = {
         label: null,
         shortLabel: null,

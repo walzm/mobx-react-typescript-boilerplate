@@ -1,5 +1,6 @@
 import { IFieldAllMetadata } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueFieldMetadataProperties, BaseValueFieldStateProperties, BaseValueField, IBaseValueFieldState } from "./baseValueField";
+import { observable } from "mobx";
 export interface IOptionFieldOption {
     id: number;
     label: string;
@@ -14,6 +15,7 @@ interface IOptionFieldState extends IOptionFieldMetaData, IBaseValueFieldState<n
 const OptionFieldMetadataProperties: ReadonlyArray<keyof IOptionFieldMetaData> = [...BaseValueFieldMetadataProperties];
 const OptionFieldStateProperties: ReadonlyArray<keyof IOptionFieldState> = [...OptionFieldMetadataProperties, ...BaseValueFieldStateProperties];
 export class OptionField extends BaseValueField<number> implements IOptionField {
+    @observable.ref
     state: IOptionFieldState = {
         label: null,
         shortLabel: null,

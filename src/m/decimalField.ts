@@ -1,5 +1,6 @@
 import { IFieldAllMetadata } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueFieldMetadataProperties, BaseValueFieldStateProperties, BaseValueField, IBaseValueFieldState } from "./baseValueField";
+import { observable } from "mobx";
 
 export interface IDecimalField extends IBaseValueField<number> {
     setMinValue(minValue: number);
@@ -25,6 +26,7 @@ const DecimalFieldMetadataProperties: ReadonlyArray<keyof IDecimalFieldMetaData>
 ];
 const DecimalFieldStateProperties: ReadonlyArray<keyof IDecimalFieldState> = [...DecimalFieldMetadataProperties, ...BaseValueFieldStateProperties];
 export class DecimalField extends BaseValueField<number> implements IDecimalField {
+    @observable.ref
     state: IDecimalFieldState = {
         label: null,
         shortLabel: null,

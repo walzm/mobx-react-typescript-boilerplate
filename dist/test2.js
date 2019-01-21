@@ -4,9 +4,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-import { ComplexType, ArrayField, field, IntegerField, TextField, ReferenceField, ComplexField, BooleanField, createModelInstance } from "./model";
 import { CustomerTransportModel } from "./customerData";
 import { autorun } from "mobx";
+import { field, ComplexType, createModelInstance } from "./m/complexType";
+import { TextField } from "./m/textField";
+import { BooleanField } from "./m/booleanField";
+import { ComplexField } from "./m/complexField";
+import { ReferenceField } from "./m/referenceField";
+import { ArrayField } from "./m/arrayField";
 export class Address extends ComplexType {
     constructor() {
         super(...arguments);
@@ -14,7 +19,6 @@ export class Address extends ComplexType {
         this.countryCode = new TextField();
         this.countryName = new TextField();
         this.houseNumber = new TextField();
-        this.id = new IntegerField();
         this.isVatIdValid = new BooleanField();
         this.line1 = new TextField();
         this.line2 = new TextField();
@@ -26,87 +30,81 @@ export class Address extends ComplexType {
 }
 __decorate([
     field({
-        label: { texts: { "de-DE": "Stadt", "en-GB": "City" } },
+        label: { "de-DE": "Stadt", "en-GB": "City" },
         maxLength: 100,
-        shortLabel: { texts: { "de-DE": "Stadt", "en-GB": "City" } }
+        shortLabel: { "de-DE": "Stadt", "en-GB": "City" }
     })
 ], Address.prototype, "city", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Ländercode", "en-GB": "CountryCode" } },
+        label: { "de-DE": "Ländercode", "en-GB": "CountryCode" },
         maxLength: 2,
         minLength: 2,
         required: true,
-        shortLabel: { texts: { "de-DE": "Ländercode", "en-GB": "CountryC." } }
+        shortLabel: { "de-DE": "Ländercode", "en-GB": "CountryC." }
     })
 ], Address.prototype, "countryCode", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Land", "en-GB": "Country" } },
+        label: { "de-DE": "Land", "en-GB": "Country" },
         readOnly: true,
-        shortLabel: { texts: { "de-DE": "Land", "en-GB": "Country" } }
+        shortLabel: { "de-DE": "Land", "en-GB": "Country" }
     })
 ], Address.prototype, "countryName", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Hausnummer", "en-GB": "House number" } },
+        label: { "de-DE": "Hausnummer", "en-GB": "House number" },
         maxLength: 10,
-        shortLabel: { texts: { "de-DE": "Hausnr.", "en-GB": "House no." } }
+        shortLabel: { "de-DE": "Hausnr.", "en-GB": "House no." }
     })
 ], Address.prototype, "houseNumber", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "", "en-GB": "" } },
+        label: { "de-DE": "", "en-GB": "" },
         required: true,
-        shortLabel: { texts: { "de-DE": "", "en-GB": "" } }
-    })
-], Address.prototype, "id", void 0);
-__decorate([
-    field({
-        label: { texts: { "de-DE": "Gültigkeit USt-IdNr.", "en-GB": "Is VatId valid" } },
-        shortLabel: { texts: { "de-DE": "Gültigkeit USt-IdNr.", "en-GB": "VatId valid" } }
+        shortLabel: { "de-DE": "", "en-GB": "" }
     })
 ], Address.prototype, "isVatIdValid", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Erste Zeile", "en-GB": "First line" } },
+        label: { "de-DE": "Erste Zeile", "en-GB": "First line" },
         maxLength: 100,
         required: true,
-        shortLabel: { texts: { "de-DE": "Erste Zeile", "en-GB": "1st line" } }
+        shortLabel: { "de-DE": "Erste Zeile", "en-GB": "1st line" }
     })
 ], Address.prototype, "line1", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Zweite Zeile", "en-GB": "Second line" } },
+        label: { "de-DE": "Zweite Zeile", "en-GB": "Second line" },
         maxLength: 100,
-        shortLabel: { texts: { "de-DE": "Zweite Zeile", "en-GB": "2nd line" } }
+        shortLabel: { "de-DE": "Zweite Zeile", "en-GB": "2nd line" }
     })
 ], Address.prototype, "line2", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Dritte Zeile", "en-GB": "Third line" } },
+        label: { "de-DE": "Dritte Zeile", "en-GB": "Third line" },
         maxLength: 100,
-        shortLabel: { texts: { "de-DE": "Dritte Zeile", "en-GB": "3th line" } }
+        shortLabel: { "de-DE": "Dritte Zeile", "en-GB": "3th line" }
     })
 ], Address.prototype, "line3", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Straße", "en-GB": "Street" } },
+        label: { "de-DE": "Straße", "en-GB": "Street" },
         maxLength: 100,
-        shortLabel: { texts: { "de-DE": "Str.", "en-GB": "Str." } }
+        shortLabel: { "de-DE": "Str.", "en-GB": "Str." }
     })
 ], Address.prototype, "street", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "USt-IdNr.", "en-GB": "VatId" } },
-        shortLabel: { texts: { "de-DE": "USt-IdNr.", "en-GB": "VatId" } }
+        label: { "de-DE": "USt-IdNr.", "en-GB": "VatId" },
+        shortLabel: { "de-DE": "USt-IdNr.", "en-GB": "VatId" }
     })
 ], Address.prototype, "vatId", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Postleitzahl", "en-GB": "Zipcode" } },
+        label: { "de-DE": "Postleitzahl", "en-GB": "Zipcode" },
         maxLength: 10,
-        shortLabel: { texts: { "de-DE": "PLZ", "en-GB": "Zip" } }
+        shortLabel: { "de-DE": "PLZ", "en-GB": "Zip" }
     })
 ], Address.prototype, "zipcode", void 0);
 export class CustomerAddress extends ComplexType {
@@ -116,7 +114,6 @@ export class CustomerAddress extends ComplexType {
         this.addressReference = new ReferenceField();
         this.customerReference = new ReferenceField();
         this.deliveryTermReference = new ReferenceField();
-        this.id = new IntegerField();
         this.isBillingAddress = new BooleanField();
         this.isDefaultBillingAddress = new BooleanField();
         this.isDefaultDeliveryAddress = new BooleanField();
@@ -128,91 +125,83 @@ export class CustomerAddress extends ComplexType {
 }
 __decorate([
     field({
-        label: { texts: { "de-DE": "Adr.", "en-GB": "Add." } },
-        shortLabel: { texts: { "de-DE": "Adresse", "en-GB": "Address" } }
+        label: { "de-DE": "Adr.", "en-GB": "Add." },
+        shortLabel: { "de-DE": "Adresse", "en-GB": "Address" }
     })
 ], CustomerAddress.prototype, "address", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Adresse", "en-GB": "Address" } },
+        label: { "de-DE": "Adresse", "en-GB": "Address" },
         serviceName: "address",
-        shortLabel: { texts: { "de-DE": "Adr.", "en-GB": "Add." } }
+        shortLabel: { "de-DE": "Adr.", "en-GB": "Add." }
     })
 ], CustomerAddress.prototype, "addressReference", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": " Kunden-ID", "en-GB": "Customer ID" } },
+        label: { "de-DE": " Kunden-ID", "en-GB": "Customer ID" },
         serviceName: "customer",
-        shortLabel: { texts: { "de-DE": " Kunden-ID", "en-GB": "Customer ID" } }
+        shortLabel: { "de-DE": " Kunden-ID", "en-GB": "Customer ID" }
     })
 ], CustomerAddress.prototype, "customerReference", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Lieferbedingung", "en-GB": "Delivery term" } },
+        label: { "de-DE": "Lieferbedingung", "en-GB": "Delivery term" },
         serviceName: "deliveryTerm",
-        shortLabel: { texts: { "de-DE": "Lief.Bed.", "en-GB": "Delivery term" } }
+        shortLabel: { "de-DE": "Lief.Bed.", "en-GB": "Delivery term" }
     })
 ], CustomerAddress.prototype, "deliveryTermReference", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "", "en-GB": "" } },
+        label: { "de-DE": "", "en-GB": "" },
         required: true,
-        shortLabel: { texts: { "de-DE": "", "en-GB": "" } }
-    })
-], CustomerAddress.prototype, "id", void 0);
-__decorate([
-    field({
-        label: { texts: { "de-DE": "Rechnungsadresse", "en-GB": "Billing address" } },
-        required: true,
-        shortLabel: { texts: { "de-DE": "Rechn. Adr.", "en-GB": "Bill. address" } }
+        shortLabel: { "de-DE": "", "en-GB": "" }
     })
 ], CustomerAddress.prototype, "isBillingAddress", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Standard Rechnungsadresse", "en-GB": "Default billing address" } },
+        label: { "de-DE": "Standard Rechnungsadresse", "en-GB": "Default billing address" },
         required: true,
-        shortLabel: { texts: { "de-DE": "Std. Rechn. Adr.", "en-GB": "Def. bill. addr." } }
+        shortLabel: { "de-DE": "Std. Rechn. Adr.", "en-GB": "Def. bill. addr." }
     })
 ], CustomerAddress.prototype, "isDefaultBillingAddress", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Standard Lieferadresse", "en-GB": "Default delivery address" } },
+        label: { "de-DE": "Standard Lieferadresse", "en-GB": "Default delivery address" },
         required: true,
-        shortLabel: { texts: { "de-DE": "Std. Lief. Adr.", "en-GB": "Def. deliv. addr." } }
+        shortLabel: { "de-DE": "Std. Lief. Adr.", "en-GB": "Def. deliv. addr." }
     })
 ], CustomerAddress.prototype, "isDefaultDeliveryAddress", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Standard Hausadresse", "en-GB": "Default house address" } },
+        label: { "de-DE": "Standard Hausadresse", "en-GB": "Default house address" },
         required: true,
-        shortLabel: { texts: { "de-DE": "Std. Haus Adr.", "en-GB": "Def. house addr." } }
+        shortLabel: { "de-DE": "Std. Haus Adr.", "en-GB": "Def. house addr." }
     })
 ], CustomerAddress.prototype, "isDefaultHouseAddress", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Lieferadresse", "en-GB": "Delivery address" } },
+        label: { "de-DE": "Lieferadresse", "en-GB": "Delivery address" },
         required: true,
-        shortLabel: { texts: { "de-DE": "Lief. Adr.", "en-GB": "Deliv. add." } }
+        shortLabel: { "de-DE": "Lief. Adr.", "en-GB": "Deliv. add." }
     })
 ], CustomerAddress.prototype, "isDeliveryAddress", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Hausadresse", "en-GB": "House address" } },
+        label: { "de-DE": "Hausadresse", "en-GB": "House address" },
         required: true,
-        shortLabel: { texts: { "de-DE": "Haus Adr.", "en-GB": "House addr." } }
+        shortLabel: { "de-DE": "Haus Adr.", "en-GB": "House addr." }
     })
 ], CustomerAddress.prototype, "isHouseAddress", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Bezeichnung", "en-GB": "Label" } },
-        shortLabel: { texts: { "de-DE": "Bez.", "en-GB": "Label" } }
+        label: { "de-DE": "Bezeichnung", "en-GB": "Label" },
+        shortLabel: { "de-DE": "Bez.", "en-GB": "Label" }
     })
 ], CustomerAddress.prototype, "label", void 0);
 export class Customer extends ComplexType {
     constructor() {
         super(...arguments);
         this.addresses = new ArrayField(CustomerAddress);
-        this.id = new IntegerField();
         this.label = new TextField();
         this.mandatorReference = new ReferenceField();
         this.matchcode = new TextField();
@@ -222,52 +211,44 @@ export class Customer extends ComplexType {
 }
 __decorate([
     field({
-        label: { texts: { "de-DE": "Adressen", "en-GB": "Addresses" } },
-        shortLabel: { texts: { "de-DE": "Adressen", "en-GB": "Addresses" } }
+        label: { "de-DE": "Adressen", "en-GB": "Addresses" },
+        shortLabel: { "de-DE": "Adressen", "en-GB": "Addresses" }
     })
 ], Customer.prototype, "addresses", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "", "en-GB": "" } },
+        label: { "de-DE": "", "en-GB": "" },
         required: true,
-        shortLabel: { texts: { "de-DE": "", "en-GB": "" } }
-    })
-], Customer.prototype, "id", void 0);
-__decorate([
-    field({
-        label: { texts: { "de-DE": "Name", "en-GB": "Name" } },
-        maxLength: 50,
-        required: true,
-        shortLabel: { texts: { "de-DE": "Name", "en-GB": "Name" } }
+        shortLabel: { "de-DE": "", "en-GB": "" }
     })
 ], Customer.prototype, "label", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Mandant", "en-GB": "Mandator" } },
+        label: { "de-DE": "Mandant", "en-GB": "Mandator" },
         serviceName: "mandator",
-        shortLabel: { texts: { "de-DE": "Mandant", "en-GB": "Mandator" } }
+        shortLabel: { "de-DE": "Mandant", "en-GB": "Mandator" }
     })
 ], Customer.prototype, "mandatorReference", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Matchcode", "en-GB": "Matchcode" } },
+        label: { "de-DE": "Matchcode", "en-GB": "Matchcode" },
         maxLength: 50,
         required: true,
-        shortLabel: { texts: { "de-DE": "Matchcode", "en-GB": "Matchcode" } }
+        shortLabel: { "de-DE": "Matchcode", "en-GB": "Matchcode" }
     })
 ], Customer.prototype, "matchcode", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Kundennummer", "en-GB": "Customer number" } },
+        label: { "de-DE": "Kundennummer", "en-GB": "Customer number" },
         readOnly: true,
-        shortLabel: { texts: { "de-DE": "Nr", "en-GB": "Customer no." } }
+        shortLabel: { "de-DE": "Nr", "en-GB": "Customer no." }
     })
 ], Customer.prototype, "number", void 0);
 __decorate([
     field({
-        label: { texts: { "de-DE": "Zahlungsbedingung", "en-GB": "Payment terms" } },
+        label: { "de-DE": "Zahlungsbedingung", "en-GB": "Payment terms" },
         serviceName: "paymentterm",
-        shortLabel: { texts: { "de-DE": "Zahl.Bed.", "en-GB": "Payment terms" } }
+        shortLabel: { "de-DE": "Zahl.Bed.", "en-GB": "Payment terms" }
     })
 ], Customer.prototype, "paymentTermReference", void 0);
 export class AddressExt extends Address {
@@ -279,8 +260,8 @@ export class AddressExt extends Address {
 __decorate([
     field({
         readOnly: true,
-        label: { texts: { "de-DE": "Gültig", "en-GB": "Valid" } },
-        shortLabel: { texts: { "de-DE": "Gültig", "en-GB": "Valid" } }
+        label: { "de-DE": "Gültig", "en-GB": "Valid" },
+        shortLabel: { "de-DE": "Gültig", "en-GB": "Valid" }
     })
 ], AddressExt.prototype, "isVatIdValidText", void 0);
 export class CustomerAddressExt extends CustomerAddress {
@@ -301,6 +282,7 @@ __decorate([
         canDelete: true
     })
 ], CustomerExt.prototype, "addresses", void 0);
+let log = null;
 function measure(name, func) {
     let start = performance.now();
     console.log("----> " + name);
@@ -310,68 +292,73 @@ function measure(name, func) {
     return ret;
 }
 let customer = createModelInstance(CustomerExt);
-let snap1 = measure("write snapshot 1", () => customer.writeSnapshot());
-let tm1 = measure("write transport model 1", () => customer.writeTransportModel());
+let snap1 = measure("write empty snapshot 1", () => customer.writeSnapshot());
+let tm1 = measure("write empty transport model 1", () => customer.writeTransportModel());
+measure("apply default tm", () => customer.applyTransportModel(CustomerTransportModel));
+console.log(customer);
+tm1 = measure("write default tm", () => customer.writeTransportModel());
+console.log(tm1);
 let model = JSON.parse(JSON.stringify(CustomerTransportModel));
 for (let a = 0; a < 5; a++) {
     model.addresses = [...model.addresses, ...model.addresses];
 }
-console.log("Addresses: " + model.addresses.length);
+log && log("Addresses: " + model.addresses.length);
 customer.applyTransportModel(model);
 customer.updateOriginalValue();
 let snap2 = measure("write snapshot 2", () => customer.writeSnapshot());
 let counter = 0;
 function hook(customer) {
-    console.log("hook start");
+    log && log("hook start");
     counter = 0;
     autorun(() => {
+        log && log("Addresses: " + customer.addresses.items.length);
         customer.addresses.items.forEach((item, index) => {
+            let perRow = 0;
             item.getFieldNames().forEach((fieldName) => {
                 if (fieldName === "address") {
-                    item.address.value.getFieldNames().forEach((fieldName) => {
+                    item.address.item.getFieldNames().forEach((fieldName) => {
+                        perRow++;
                         autorun(() => {
-                            let val = item.address.value[fieldName].value;
+                            let field = item.address.item[fieldName].state;
+                            let val = field.value;
+                            log && log(index + ": address." + fieldName + ": " + val);
                             counter++;
                         });
                     });
                 }
                 else {
+                    perRow++;
                     autorun(() => {
-                        let val = item[fieldName].value;
+                        let field = item[fieldName].state;
+                        let val = field.value;
+                        log && log(index + ": " + fieldName + ": " + val);
                         counter++;
                     });
                 }
             });
         });
     });
+    let perCustomer = 0;
     customer.getFieldNames().forEach((fieldName) => {
+        perCustomer++;
         autorun(() => {
-            let val = customer[fieldName].value;
+            let field = customer[fieldName].state;
+            let val = field.value;
             counter++;
         });
     });
-    autorun(() => {
-        let val = customer.modified;
-        console.log(val);
-    });
-    console.log("hook end");
+    log && log("hook end");
 }
 let customer2 = createModelInstance(CustomerExt);
-measure("apply snapshot 1", () => customer2.applySnapshot(snap2));
-measure("apply snapshot 2", () => customer2.applySnapshot(snap2));
+counter = 0;
 hook(customer2);
-measure("apply snapshot 3", () => customer2.applySnapshot(snap2));
-console.log(counter);
-customer2 = createModelInstance(CustomerExt);
-hook(customer2);
+console.log("hooked");
 measure("apply snapshot 4", () => customer2.applySnapshot(snap2));
-console.log(counter);
-let org = customer2.addresses.items[4].address.value.line1.value;
-measure("set value 1", () => {
-    customer2.addresses.items[4].address.value.line1.value = "hello";
-});
-console.log(counter);
-measure("set value 2", () => {
-    customer2.addresses.items[4].address.value.line1.value = org;
-});
-console.log(counter);
+log = console.log;
+log && log(counter);
+log && log(snap2);
+log && log(customer2);
+measure("update value", () => customer2.addresses.items[0].address.item.city.setValue("xx"));
+log && log(counter);
+measure("update value array", () => customer2.addresses.items[63].address.item.city.setValue("xx"));
+log && log(counter);

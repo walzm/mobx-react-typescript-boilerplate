@@ -1,5 +1,6 @@
 import { IFieldAllMetadata, FieldSubType } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueFieldMetadataProperties, BaseValueFieldStateProperties, BaseValueField, IBaseValueFieldState } from "./baseValueField";
+import { observable } from "mobx";
 
 type LocalizedTextLocalizedFieldValue = Map<string, string>;
 export interface ITextLocalizedField extends IBaseValueField<LocalizedTextLocalizedFieldValue> {
@@ -22,6 +23,7 @@ const TextLocalizedFieldMetadataProperties: ReadonlyArray<keyof ITextLocalizedFi
 const TextLocalizedFieldStateProperties: ReadonlyArray<keyof ITextLocalizedFieldState> = [...TextLocalizedFieldMetadataProperties, ...BaseValueFieldStateProperties].filter((key) => key !== "value" && key != "originalValue");
 
 export class TextLocalizedField extends BaseValueField<LocalizedTextLocalizedFieldValue> implements ITextLocalizedField {
+    @observable.ref
     state: ITextLocalizedFieldState = {
         label: null,
         shortLabel: null,

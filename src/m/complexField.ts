@@ -4,27 +4,31 @@ import { observable } from "mobx";
 import { IFieldAllMetadata } from "./commonModelTypes";
 
 export interface IComplexField<TComplexType extends IComplexType> extends IBaseField {
-    readonly item: TComplexType;
+    readonly item: TComplexType
 }
 interface IComplexFieldMetaData extends IBaseFieldMetadata {
 }
-interface IComplexFieldState extends IComplexFieldMetaData {
+interface IComplexFieldState<TComplexType extends IComplexType> extends IComplexFieldMetaData {
+    item: TComplexType
 }
 const ComplexFieldMetadataProperties: ReadonlyArray<keyof IComplexFieldMetaData> = [...BaseFieldMetadataProperties];
 
 export class ComplexField<TComplexType extends IComplexType> extends BaseField implements IComplexField<TComplexType> {
     @observable.ref
-    state: IComplexFieldState = {
+    state: IComplexFieldState<TComplexType> = {
         label: null,
         shortLabel: null,
         messages: [],
-        hidden: false
+        hidden: false,
+        item: null
     };
-    readonly item: TComplexType;
     constructor(protected itemCtor: new () => TComplexType) {
         super();
-        this.item = createModelInstance(itemCtor);
-        (this.item as any).$parent = this;
+        this.state.item = createModelInstance(itemCtor);
+        (this.state.item as any).$parent = this;
+    }
+    get item() {
+        return this.state.item;
     }
     applyMetadata(metadata: IFieldAllMetadata) {
         let newState;
@@ -43,27 +47,27 @@ export class ComplexField<TComplexType extends IComplexType> extends BaseField i
         }
     }
     updateOriginalValue() {
-        this.item.updateOriginalValue();
+        this.state.item.updateOriginalValue();
     }
     writeSnapshot() {
         let snapshot = {
             ...this.state,
-            item: this.item.writeSnapshot()
+            item: this.state.item.writeSnapshot()
         }
         return snapshot;
     }
     applySnapshot(snapshot: any) {
         let newState = {
-            ...snapshot
+            ...snapshot,
+            item: this.state.item
         };
-        delete newState.item;
-        this.item.applySnapshot(snapshot.item);
+        newState.item.applySnapshot(snapshot.item);
         this.state = newState;
     }
     writeTransportModel() {
-        return this.item.writeTransportModel();
+        return this.state.item.writeTransportModel();
     }
     applyTransportModel(transportModel: any) {
-        this.item.applyTransportModel(transportModel);
+        this.state.item.applyTransportModel(transportModel);
     }
 }

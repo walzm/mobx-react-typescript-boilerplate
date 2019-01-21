@@ -1,5 +1,6 @@
 import { IFieldAllMetadata, FieldSubType } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueFieldMetadataProperties, BaseValueFieldStateProperties, BaseValueField, IBaseValueFieldState } from "./baseValueField";
+import { observable } from "mobx";
 
 export interface ITextField extends IBaseValueField<string> {
     setMinLength(minLength: number);
@@ -20,6 +21,7 @@ const TextFieldMetadataProperties: ReadonlyArray<keyof ITextFieldMetaData> = [..
 ];
 const TextFieldStateProperties: ReadonlyArray<keyof ITextFieldState> = [...TextFieldMetadataProperties, ...BaseValueFieldStateProperties];
 export class TextField extends BaseValueField<string> implements ITextField {
+    @observable.ref
     state: ITextFieldState = {
         label: null,
         shortLabel: null,

@@ -1,5 +1,6 @@
 import { IFieldAllMetadata } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueFieldMetadataProperties, BaseValueFieldStateProperties, BaseValueField, IBaseValueFieldState } from "./baseValueField";
+import { observable } from "mobx";
 
 export interface IIntegerField extends IBaseValueField<number> {
     setMinValue(minValue: number);
@@ -18,6 +19,7 @@ const IntegerFieldMetadataProperties: ReadonlyArray<keyof IIntegerFieldMetaData>
 ];
 const IntegerFieldStateProperties: ReadonlyArray<keyof IIntegerFieldState> = [...IntegerFieldMetadataProperties, ...BaseValueFieldStateProperties];
 export class IntegerField extends BaseValueField<number> implements IIntegerField {
+    @observable.ref
     state: IIntegerFieldState = {
         label: null,
         shortLabel: null,

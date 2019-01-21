@@ -1,5 +1,6 @@
 import { IFieldAllMetadata } from "./commonModelTypes";
 import { IBaseValueField, IBaseValueFieldMetaData, BaseValueFieldMetadataProperties, BaseValueFieldStateProperties, BaseValueField, IBaseValueFieldState } from "./baseValueField";
+import { observable } from "mobx";
 
 export interface IReferenceField extends IBaseValueField<number> {
     setServiceName(serviceName: string);
@@ -22,6 +23,7 @@ const ReferenceFieldMetadataProperties: ReadonlyArray<keyof IReferenceFieldMetaD
 ];
 const ReferenceFieldStateProperties: ReadonlyArray<keyof IReferenceFieldState> = [...ReferenceFieldMetadataProperties, ...BaseValueFieldStateProperties, "displayLabel", "description"];
 export class ReferenceField extends BaseValueField<number> implements IReferenceField {
+    @observable.ref
     state: IReferenceFieldState = {
         label: null,
         shortLabel: null,

@@ -1,5 +1,5 @@
 import { IFieldAllMetadata } from "./commonModelTypes";
-import { observable } from "mobx";
+import { observable, IObservableArray } from "mobx";
 import { BaseFieldMetadataProperties, IBaseFieldMetadata, IBaseField, BaseField } from "./baseField";
 import { IComplexType, createModelInstance } from "./complexType";
 
@@ -36,9 +36,10 @@ interface IArrayFieldMetaData extends IBaseFieldMetadata {
     take: number;
     totalCount: number;
     loading: boolean;
-    serverPaged: boolean
+    serverPaged: boolean;
 }
-interface IArrayFieldState extends IArrayFieldMetaData {
+interface IArrayFieldState<TComplexType extends IComplexType> extends IArrayFieldMetaData {
+    items: IObservableArray<TComplexType>;
 }
 const ArrayFieldMetadataProperties: ReadonlyArray<keyof IArrayFieldMetaData> = [...BaseFieldMetadataProperties,
     "disabled",
@@ -58,7 +59,7 @@ const ArrayFieldMetadataProperties: ReadonlyArray<keyof IArrayFieldMetaData> = [
 const ArrayFieldStateProperties: ReadonlyArray<keyof IArrayFieldMetaData> = [...ArrayFieldMetadataProperties];
 export class ArrayField<TComplexType extends IComplexType> extends BaseField implements IArrayField<TComplexType> {
     @observable.ref
-    state: IArrayFieldState = {
+    state: IArrayFieldState<TComplexType> = {
         label: null,
         shortLabel: null,
         messages: [],
@@ -73,11 +74,12 @@ export class ArrayField<TComplexType extends IComplexType> extends BaseField imp
         take: null,
         totalCount: null,
         loading: false,
-        serverPaged: false
+        serverPaged: false,
+
+        items: observable<TComplexType>([])
     };
-    @observable _items: TComplexType[] = [];
     get items() {
-        return this._items;
+        return this.state.items;
     }
     constructor(protected itemCtor: new () => TComplexType) {
         super();
@@ -209,23 +211,26 @@ export class ArrayField<TComplexType extends IComplexType> extends BaseField imp
                 newState[property] = snapshot[property];
             }
         })
+        let newItems = (snapshot.items || []).map((snapshotItem) => {
+            let item = createModelInstance(this.itemCtor);
+            item.applySnapshot(snapshotItem);
+            (item as any).$parent = this;
+            return item;
+        });
+        if (this.state.items.length !== newItems.length) {
+            if (!newState) {
+                newState = {
+                    ...this.state
+                }
+            }
+            newState.items = observable(newItems);
+        }
         if (newState) {
             this.state = newState;
         }
-        if (snapshot && snapshot.items) {
-            let newItems = snapshot.items.map((snapshotItem) => {
-                let item = createModelInstance(this.itemCtor);
-                item.applyTransportModel(snapshotItem);
-                (item as any).$parent = this;
-                return item;
-            });
-            if (newItems != null) {
-                this._items = newItems;
-            }
-        }
     }
     writeTransportModel() {
-        return this._items.map((item) => {
+        return this.state.items.map((item) => {
             return item.writeTransportModel();
         });
     }
@@ -237,7 +242,7 @@ export class ArrayField<TComplexType extends IComplexType> extends BaseField imp
             return item;
         });
         if (newItems != null) {
-            this._items = newItems;
+            this.state.items = newItems;
         }
     }
     public append(item?: TComplexType): TComplexType {
@@ -246,7 +251,7 @@ export class ArrayField<TComplexType extends IComplexType> extends BaseField imp
             item = createModelInstance(ctor);
             (item as any).$parent = this;
         }
-        this._items.push(item);
+        this.state.items.push(item);
         return item;
     }
 }

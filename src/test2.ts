@@ -207,8 +207,9 @@ let log = null;
 function measure(name: string, func: () => any) {
     let start = performance.now();
     console.log("----> " + name);
-    performance.mark(name);
+    //console.profile(name);
     let ret = func();
+    //console.profileEnd();
     let end = performance.now();
     console.log("<--- " + (end - start) + "ms");
     return ret;
@@ -239,33 +240,47 @@ function hook(customer: CustomerExt) {
     log && log("hook start");
     counter = 0;
     autorun(() => {
+        log && log("Addresses: " + customer.addresses.items.length);
+        //console.log("Addresses: " + customer.addresses.items.length);
         customer.addresses.items.forEach((item, index) => {
+            let perRow = 0;
             item.getFieldNames().forEach((fieldName) => {
                 if (fieldName === "address") {
                     item.address.item.getFieldNames().forEach((fieldName) => {
+                        perRow++;
                         autorun(() => {
-                            let val = item.address.item[fieldName].getValue();
+                            let field = item.address.item[fieldName].state;
+                            let val = field.value;
                             log && log(index + ": address." + fieldName + ": " + val);
                             counter++;
                         })
                     });
                 } else {
+                    perRow++;
                     autorun(() => {
-                        let val = item[fieldName].getValue();
+                        let field = item[fieldName].state;
+                        let val = field.value;
                         log && log(index + ": " + fieldName + ": " + val);
+                        //console.log(index + ": " + fieldName + ": " + val);
                         counter++;
                     })
                 }
             })
+            //console.log(perRow);
         });
     });
+    let perCustomer = 0;
     customer.getFieldNames().forEach((fieldName) => {
+        perCustomer++;
         autorun(() => {
-            let val = customer[fieldName].value;
-            //log && log(fieldName + ": " + val);
+            let field = customer[fieldName].state;
+            //console.log(field);
+            let val = field.value;
+            //console.log(val)
             counter++;
         })
     });
+    //console.log(perCustomer);
     // autorun(() => {
     //     let val = customer.modified;
     //     log && log(val)
@@ -283,12 +298,21 @@ measure("apply snapshot 3", () => customer2.applySnapshot(snap2));
 log && log(counter);
 customer2 = createModelInstance(CustomerExt);
 */
+counter = 0;
 hook(customer2);
+console.log("hooked");
 measure("apply snapshot 4", () => customer2.applySnapshot(snap2));
 log = console.log;
 log && log(counter);
 log && log(snap2)
 log && log(customer2)
+
+measure("update value", () => customer2.addresses.items[0].address.item.city.setValue("xx"));
+log && log(counter);
+
+measure("update value array", () => customer2.addresses.items[63].address.item.city.setValue("xx"));
+log && log(counter);
+
 /*
 let org = customer2.addresses.items[4].address.item.line1.getValue();
 measure("set value 1", () => {
@@ -300,5 +324,35 @@ measure("set value 2", () => {
 });
 log && log(counter);
 
+*/
 
+/*
+addr: 24 felder * 64 = 1536
+kunde: 8 felder = 8
+*/
+/*
+ aktuelle implementierung ohne hooks: 64 adressen
+ no hooks
+ 70 ms
+
+ mit hooks:
+ 180ms
+
+ mit hooks production build:
+ 150ms
+
+*/
+
+
+/* Aktuelles model (MST)
+ 64 addresses
+ mit ui hooks
+apply snapshot from service: 2496.6000000022177ms
+listDetailEditViewLogic.ts:373 update snapshot: 116.30000000150176ms
+
+ohne ui hooks
+apply snapshot: 369.30000000211294ms
+
+prod mode:
+apply snapshot: 280.30000000211294ms
 */
