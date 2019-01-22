@@ -1,6 +1,32 @@
 import { IIdField, IdField } from "./idField";
 import { IStateModelNode, GW_METADATA_MODEL_FIELD_METADATA, GW_METADATA_MODEL_FIELDS, IFieldAllMetadata } from "./commonModelTypes";
 import { observable } from "mobx";
+import { IBaseValueField } from "./baseValueField";
+
+export type ValueFieldProperties<T> = ({ [P in keyof T]: T[P] extends IBaseValueField<any> ? P : never })[keyof T]
+type OnCreateInstanceListener<TComplexType extends IComplexType> = (instance: TComplexType) => void;
+
+export interface IModelContext {
+    onCreateInstance<TComplexType extends IComplexType>(complexType: new () => TComplexType, eventListener: OnCreateInstanceListener<TComplexType>);
+}
+
+class ModelContext implements IModelContext {
+    protected onCreateInstanceListeners = [];
+
+    onCreateInstance<TComplexType extends IComplexType>(complexType: new () => TComplexType, eventListener: OnCreateInstanceListener<TComplexType>) {
+        this.onCreateInstanceListeners.push({
+            ctor: complexType,
+            eventListener: eventListener
+        });
+    }
+
+    fireOnCreateInstance(ctor, instance) {
+        this.onCreateInstanceListeners.filter((listener) => listener.ctor === ctor).forEach((listener) => listener.eventListener(instance));
+    }
+}
+export function createModelContext(): IModelContext {
+    return new ModelContext();
+}
 
 export function field(fieldMetadata?: IFieldAllMetadata) {
     return function (target: any, key: string | symbol, baseDescriptor?: PropertyDescriptor) {
@@ -8,7 +34,10 @@ export function field(fieldMetadata?: IFieldAllMetadata) {
         if (fields == null) {
             let baseTypeFields = Reflect.getMetadata(GW_METADATA_MODEL_FIELDS, target);
             if (baseTypeFields) {
-                fields = [...baseTypeFields, key];
+                fields = [...baseTypeFields];
+                if (fields.indexOf(key) < 0) {
+                    fields.push(key);
+                }
             } else {
                 fields = [key];
             }
@@ -26,7 +55,8 @@ export function field(fieldMetadata?: IFieldAllMetadata) {
             };
         }
         Reflect.defineMetadata(GW_METADATA_MODEL_FIELD_METADATA, fieldMetadata, target, key);
-        return observable(target, key, baseDescriptor);
+        let property = observable(target, key, baseDescriptor);
+        return property;
     }
 }
 
@@ -34,10 +64,11 @@ export interface IComplexType extends IStateModelNode {
     readonly id: IIdField;
     getFieldNames(): string[];
     updateOriginalValue();
+    findClosest<TComplexType extends IComplexType>(complexType: new() => TComplexType);
 }
 
 export class ComplexType implements IComplexType {
-    $parent: IStateModelNode;
+    readonly parent: IStateModelNode;
     @field()
     id: IIdField = new IdField();
     private init() {
@@ -47,7 +78,7 @@ export class ComplexType implements IComplexType {
         let fieldNames = this.getFieldNames();
         fieldNames.forEach((fieldName) => {
             let field = this[fieldName];
-            field.$parent = this;
+            field.parent = this;
             let fieldMetadata = Reflect.getMetadata(GW_METADATA_MODEL_FIELD_METADATA, this, fieldName);
             fieldMetadata && field.applyMetadata(fieldMetadata);
         });
@@ -93,11 +124,30 @@ export class ComplexType implements IComplexType {
             }
         });
     }
+
+    onValueChanged<TComplexType extends this>(propertyName: ValueFieldProperties<TComplexType>, eventListener: (target: this, value: any, previousValue: any, propertyName: ValueFieldProperties<TComplexType>) => void) {
+        let valueField = this[propertyName as string] as IBaseValueField<any>;
+        valueField && valueField.attachOnValueChanged(eventListener as any);
+    }
+    public findClosest<TComplexType extends IComplexType>(complexType: new() => TComplexType): TComplexType {
+        let currentNode = this.parent;
+        while (currentNode != null) {
+            if (currentNode.constructor == complexType) {
+                return currentNode as TComplexType;
+            }
+            currentNode = currentNode.parent;
+        }
+    }
 }
 
-export function createModelInstance<TComplexType extends IComplexType>(complexType: new () => TComplexType): TComplexType {
+export function createModelInstance<TComplexType extends IComplexType>(complexType: new () => TComplexType, parent?: IStateModelNode, modelContext?: IModelContext): TComplexType {
     let instance = new complexType();
     let instanceAsAny = instance as any;
     instanceAsAny.init();
+    instanceAsAny.parent = parent;
+    if (modelContext) {
+        instanceAsAny.modelContext = modelContext;
+        modelContext && (modelContext as ModelContext).fireOnCreateInstance(complexType, instance);
+    }
     return instance;
 }

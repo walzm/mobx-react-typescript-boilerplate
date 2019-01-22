@@ -28,6 +28,7 @@ export class OptionField extends BaseValueField<number> implements IOptionField 
         options: []
     };
     applyMetadata(metadata: IFieldAllMetadata) {
+        this.name = metadata.name;
         let newState;
         OptionFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

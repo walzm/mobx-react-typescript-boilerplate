@@ -38,6 +38,7 @@ export class IntegerField extends BaseValueField {
         }
     }
     applyMetadata(metadata) {
+        this.name = metadata.name;
         let newState;
         IntegerFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

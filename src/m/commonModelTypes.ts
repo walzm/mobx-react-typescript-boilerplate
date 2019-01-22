@@ -54,7 +54,7 @@ export class Message implements IMessage {
 }
 
 export interface IStateModelNode {
-    readonly $parent: IStateModelNode;
+    readonly parent: IStateModelNode;
     writeSnapshot(): any;
     applySnapshot(snapshot: any);
     writeTransportModel(): any;

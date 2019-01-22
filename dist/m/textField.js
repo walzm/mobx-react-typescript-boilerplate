@@ -45,6 +45,7 @@ export class TextField extends BaseValueField {
         }
     }
     applyMetadata(metadata) {
+        this.name = metadata.name;
         let newState;
         TextFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

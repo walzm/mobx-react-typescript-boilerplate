@@ -24,6 +24,7 @@ export class BooleanField extends BaseValueField<boolean> implements IBooleanFie
         originalValue: null
     };
     applyMetadata(metadata: IFieldAllMetadata) {
+        this.name = metadata.name;
         let newState;
         BooleanFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

@@ -73,6 +73,7 @@ export class ReferenceField extends BaseValueField<number> implements IReference
         }
     }
     applyMetadata(metadata: IFieldAllMetadata) {
+        this.name = metadata.name;
         let newState;
         ReferenceFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

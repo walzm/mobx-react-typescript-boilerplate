@@ -13,7 +13,8 @@ export class IdField extends BaseValueField {
             value: null
         };
     }
-    applyMetadata(_metadata) {
+    applyMetadata(metadata) {
+        this.name = metadata.name;
     }
     applySnapshot(snapshot) {
         if ("value" in snapshot && snapshot.value !== this.state.value) {

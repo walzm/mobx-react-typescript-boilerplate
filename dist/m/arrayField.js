@@ -103,6 +103,7 @@ export class ArrayField extends BaseField {
         }
     }
     applyMetadata(metadata) {
+        this.name = metadata.name;
         let newState;
         ArrayFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {
@@ -133,9 +134,8 @@ export class ArrayField extends BaseField {
             }
         });
         let newItems = (snapshot.items || []).map((snapshotItem) => {
-            let item = createModelInstance(this.itemCtor);
+            let item = createModelInstance(this.itemCtor, this, this.parent.modelContext);
             item.applySnapshot(snapshotItem);
-            item.$parent = this;
             return item;
         });
         if (this.state.items.length !== newItems.length) {
@@ -155,9 +155,8 @@ export class ArrayField extends BaseField {
     }
     applyTransportModel(transportModel) {
         let newItems = transportModel && transportModel.map && transportModel.map((transportModelItem) => {
-            let item = createModelInstance(this.itemCtor);
+            let item = createModelInstance(this.itemCtor, this, this.parent.modelContext);
             item.applyTransportModel(transportModelItem);
-            item.$parent = this;
             return item;
         });
         if (newItems != null) {
@@ -166,9 +165,7 @@ export class ArrayField extends BaseField {
     }
     append(item) {
         if (item == null) {
-            let ctor = this.itemCtor;
-            item = createModelInstance(ctor);
-            item.$parent = this;
+            item = createModelInstance(this.itemCtor, this, this.parent.modelContext);
         }
         this.state.items.push(item);
         return item;

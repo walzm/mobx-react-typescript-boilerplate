@@ -60,6 +60,7 @@ export class TextField extends BaseValueField<string> implements ITextField {
         }
     }
     applyMetadata(metadata: IFieldAllMetadata) {
+        this.name = metadata.name;
         let newState;
         TextFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

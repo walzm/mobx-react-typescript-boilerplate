@@ -19,13 +19,13 @@ export class ComplexField extends BaseField {
             hidden: false,
             item: null
         };
-        this.state.item = createModelInstance(itemCtor);
-        this.state.item.$parent = this;
     }
     get item() {
         return this.state.item;
     }
     applyMetadata(metadata) {
+        this.name = metadata.name;
+        this.state.item = createModelInstance(this.itemCtor, this, this.parent.modelContext);
         let newState;
         ComplexFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

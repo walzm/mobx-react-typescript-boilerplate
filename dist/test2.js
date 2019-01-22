@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { CustomerTransportModel } from "./customerData";
 import { autorun } from "mobx";
-import { field, ComplexType, createModelInstance } from "./m/complexType";
+import { field, ComplexType, createModelInstance, createModelContext } from "./m/complexType";
 import { TextField } from "./m/textField";
 import { BooleanField } from "./m/booleanField";
 import { ComplexField } from "./m/complexField";
@@ -349,7 +349,34 @@ function hook(customer) {
     });
     log && log("hook end");
 }
-let customer2 = createModelInstance(CustomerExt);
+let modelContext = createModelContext();
+modelContext.onCreateInstance(CustomerExt, (instance) => {
+    instance.onValueChanged("matchcode", (target, value, previousValue, propertyName) => {
+        console.log("matchcode");
+        console.log("Neu: " + value);
+        console.log("Alt: " + previousValue);
+    });
+});
+modelContext.onCreateInstance(CustomerAddressExt, (instance) => {
+    instance.onValueChanged("isDefaultDeliveryAddress", (target, value, previousValue, propertyName) => {
+        console.log("isDefaultDeliveryAddress");
+        console.log("Neu: " + value);
+        console.log("Alt: " + previousValue);
+        if (value) {
+            target.isDeliveryAddress.setValue(true);
+        }
+        let containingCustomer = instance.findClosest(CustomerExt);
+        containingCustomer && containingCustomer.matchcode.setValue("Super", true);
+    });
+});
+let customer2 = createModelInstance(CustomerExt, null, modelContext);
+customer2.applyTransportModel(CustomerTransportModel);
+customer2.matchcode.setValue("123", true);
+customer2.addresses.items[1].isDeliveryAddress.setValue(false);
+customer2.addresses.items[1].isDefaultDeliveryAddress.setValue(false);
+customer2.addresses.items[1].isDefaultDeliveryAddress.setValue(true, true);
+console.log(customer2.addresses.items[1].isDeliveryAddress.state.value);
+customer2 = createModelInstance(CustomerExt);
 counter = 0;
 hook(customer2);
 console.log("hooked");

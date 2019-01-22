@@ -41,6 +41,7 @@ export class ActionField extends BaseField {
         }
     }
     applyMetadata(metadata) {
+        this.name = metadata.name;
         let newState;
         ActionFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

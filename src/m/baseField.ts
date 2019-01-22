@@ -28,7 +28,8 @@ export const BaseFieldMetadataProperties: ReadonlyArray<keyof IBaseFieldMetadata
 ];
 
 export abstract class BaseField {
-    $parent: IStateModelNode;
+    parent: IStateModelNode;
+    name: string;
     abstract state: IBaseFieldState;
     setLabel(label: string) {
         if (label !== this.state.label) {

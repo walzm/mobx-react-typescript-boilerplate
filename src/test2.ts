@@ -1,9 +1,7 @@
 import { CustomerTransportModel } from "./customerData";
-import { autorun } from "mobx";
-import { field, ComplexType, createModelInstance } from "./m/complexType";
+import { field, ComplexType, createModelInstance, createModelContext } from "./m/complexType";
 import { TextField } from "./m/textField";
 import { BooleanField } from "./m/booleanField";
-import { IntegerField } from "./m/integerField";
 import { ComplexField } from "./m/complexField";
 import { ReferenceField } from "./m/referenceField";
 import { ArrayField } from "./m/arrayField";
@@ -214,6 +212,7 @@ function measure(name: string, func: () => any) {
     console.log("<--- " + (end - start) + "ms");
     return ret;
 }
+/*
 let customer = createModelInstance(CustomerExt);
 let snap1 = measure("write empty snapshot 1", () => customer.writeSnapshot());
 let tm1 = measure("write empty transport model 1", () => customer.writeTransportModel());
@@ -287,19 +286,54 @@ function hook(customer: CustomerExt) {
     // })
     log && log("hook end");
 }
+*/
+
+let modelContext = createModelContext();
+
+modelContext.onCreateInstance(CustomerExt, (instance) => {
+    instance.onValueChanged("matchcode", (target, value, previousValue, propertyName) => {
+        console.log("matchcode");
+        console.log("Neu: " + value);
+        console.log("Alt: " + previousValue);
+    })
+});
+
+modelContext.onCreateInstance(CustomerAddressExt, (instance) => {
+    instance.onValueChanged("isDefaultDeliveryAddress", (target, value, previousValue, propertyName) => {
+        console.log("isDefaultDeliveryAddress");
+        console.log("Neu: " + value);
+        console.log("Alt: " + previousValue);
+        if (value) {
+            target.isDeliveryAddress.setValue(true);
+            let customer = instance.findClosest(CustomerExt);
+            if (customer) {
+                customer.addresses.items.filter(address => address !== target).forEach(address => address.isDefaultDeliveryAddress.setValue(false));
+            }
+        }
+    });
+});
+//customer2.matchcode.
+let customer2 = createModelInstance(CustomerExt, null, modelContext);
+customer2.applyTransportModel(CustomerTransportModel);
+console.log(customer2.addresses.items.map(item => Object.keys(item).filter(key => key.startsWith("is")).reduce((p, c) => { p[c] = item[c].getValue(); return p; }, {})));
+
+customer2.matchcode.setValue("123", true);
+
+customer2.addresses.items[1].isDefaultDeliveryAddress.setValue(true, true);
+console.log(customer2.addresses.items.map(item => Object.keys(item).filter(key => key.startsWith("is")).reduce((p, c) => { p[c] = item[c].getValue(); return p; }, {})));
 
 
-let customer2 = createModelInstance(CustomerExt);
 /*
 measure("apply snapshot 1", () => customer2.applySnapshot(snap2));
 measure("apply snapshot 2", () => customer2.applySnapshot(snap2));
 hook(customer2);
 measure("apply snapshot 3", () => customer2.applySnapshot(snap2));
 log && log(counter);
+
 customer2 = createModelInstance(CustomerExt);
-*/
+/*
 counter = 0;
-hook(customer2);
+//hook(customer2);
 console.log("hooked");
 measure("apply snapshot 4", () => customer2.applySnapshot(snap2));
 log = console.log;

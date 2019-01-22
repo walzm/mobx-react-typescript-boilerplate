@@ -15,10 +15,15 @@ export class BaseValueField extends BaseField {
             this.state = Object.assign({}, this.state, { required });
         }
     }
-    setValue(value) {
-        if (value !== this.state.value) {
+    setValue(value, triggerEvent = false) {
+        if (!this.valuesAreEqual(value, this.state.value)) {
+            let oldValue = this.state.value;
             this.state = Object.assign({}, this.state, { value });
+            triggerEvent && this._onValueChangedListeners && this.invokeOnValueChanged(value, oldValue);
         }
+    }
+    valuesAreEqual(valueA, valueB) {
+        return valueA === valueB;
     }
     getValue() {
         return this.state.value;
@@ -35,5 +40,12 @@ export class BaseValueField extends BaseField {
         return this.state.value;
     }
     updateOriginalValue() {
+    }
+    invokeOnValueChanged(value, previousValue) {
+        this._onValueChangedListeners.forEach((eventListener) => eventListener(this.parent, value, previousValue, this.name));
+    }
+    attachOnValueChanged(eventListener) {
+        this._onValueChangedListeners = this._onValueChangedListeners || [];
+        this._onValueChangedListeners.push(eventListener);
     }
 }

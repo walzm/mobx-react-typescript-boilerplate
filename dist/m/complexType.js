@@ -7,13 +7,33 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { IdField } from "./idField";
 import { GW_METADATA_MODEL_FIELD_METADATA, GW_METADATA_MODEL_FIELDS } from "./commonModelTypes";
 import { observable } from "mobx";
+class ModelContext {
+    constructor() {
+        this.onCreateInstanceListeners = [];
+    }
+    onCreateInstance(complexType, eventListener) {
+        this.onCreateInstanceListeners.push({
+            ctor: complexType,
+            eventListener: eventListener
+        });
+    }
+    fireOnCreateInstance(ctor, instance) {
+        this.onCreateInstanceListeners.filter((listener) => listener.ctor === ctor).forEach((listener) => listener.eventListener(instance));
+    }
+}
+export function createModelContext() {
+    return new ModelContext();
+}
 export function field(fieldMetadata) {
     return function (target, key, baseDescriptor) {
         let fields = Reflect.getOwnMetadata(GW_METADATA_MODEL_FIELDS, target);
         if (fields == null) {
             let baseTypeFields = Reflect.getMetadata(GW_METADATA_MODEL_FIELDS, target);
             if (baseTypeFields) {
-                fields = [...baseTypeFields, key];
+                fields = [...baseTypeFields];
+                if (fields.indexOf(key) < 0) {
+                    fields.push(key);
+                }
             }
             else {
                 fields = [key];
@@ -30,7 +50,8 @@ export function field(fieldMetadata) {
             fieldMetadata = Object.assign({}, baseTypeFieldMetadata, fieldMetadata);
         }
         Reflect.defineMetadata(GW_METADATA_MODEL_FIELD_METADATA, fieldMetadata, target, key);
-        return observable(target, key, baseDescriptor);
+        let property = observable(target, key, baseDescriptor);
+        return property;
     };
 }
 export class ComplexType {
@@ -44,7 +65,7 @@ export class ComplexType {
         let fieldNames = this.getFieldNames();
         fieldNames.forEach((fieldName) => {
             let field = this[fieldName];
-            field.$parent = this;
+            field.parent = this;
             let fieldMetadata = Reflect.getMetadata(GW_METADATA_MODEL_FIELD_METADATA, this, fieldName);
             fieldMetadata && field.applyMetadata(fieldMetadata);
         });
@@ -89,13 +110,31 @@ export class ComplexType {
             }
         });
     }
+    onValueChanged(propertyName, eventListener) {
+        let valueField = this[propertyName];
+        valueField && valueField.attachOnValueChanged(eventListener);
+    }
+    findClosest(complexType) {
+        let currentNode = this.parent;
+        while (currentNode != null) {
+            if (currentNode.constructor == complexType) {
+                return currentNode;
+            }
+            currentNode = currentNode.parent;
+        }
+    }
 }
 __decorate([
     field()
 ], ComplexType.prototype, "id", void 0);
-export function createModelInstance(complexType) {
+export function createModelInstance(complexType, parent, modelContext) {
     let instance = new complexType();
     let instanceAsAny = instance;
     instanceAsAny.init();
+    instanceAsAny.parent = parent;
+    if (modelContext) {
+        instanceAsAny.modelContext = modelContext;
+        modelContext && modelContext.fireOnCreateInstance(complexType, instance);
+    }
     return instance;
 }

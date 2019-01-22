@@ -13,7 +13,8 @@ export class IdField extends BaseValueField<number> implements IIdField {
     state: IIdFieldState = {
         value: null
     } as IIdFieldState;
-    applyMetadata(_metadata: IFieldAllMetadata) {
+    applyMetadata(metadata: IFieldAllMetadata) {
+        this.name = metadata.name;
     }
     applySnapshot(snapshot: any) {
         if ("value" in snapshot && snapshot.value !== this.state.value) {

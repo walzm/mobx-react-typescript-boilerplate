@@ -45,6 +45,7 @@ export class TextLocalizedField extends BaseValueField {
         }
     }
     applyMetadata(metadata) {
+        this.name = metadata.name;
         let newState;
         TextLocalizedFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

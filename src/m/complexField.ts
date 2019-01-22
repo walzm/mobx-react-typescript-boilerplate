@@ -1,4 +1,4 @@
-import { IComplexType, createModelInstance } from "./complexType";
+import { IComplexType, createModelInstance, IModelContext } from "./complexType";
 import { IBaseFieldMetadata, BaseFieldMetadataProperties, BaseField, IBaseField } from "./baseField";
 import { observable } from "mobx";
 import { IFieldAllMetadata } from "./commonModelTypes";
@@ -24,13 +24,13 @@ export class ComplexField<TComplexType extends IComplexType> extends BaseField i
     };
     constructor(protected itemCtor: new () => TComplexType) {
         super();
-        this.state.item = createModelInstance(itemCtor);
-        (this.state.item as any).$parent = this;
     }
     get item() {
         return this.state.item;
     }
     applyMetadata(metadata: IFieldAllMetadata) {
+        this.name = metadata.name;
+        this.state.item = createModelInstance(this.itemCtor, this, (this.parent as any).modelContext);
         let newState;
         ComplexFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

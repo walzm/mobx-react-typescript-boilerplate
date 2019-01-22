@@ -24,6 +24,7 @@ export class OptionField extends BaseValueField {
         };
     }
     applyMetadata(metadata) {
+        this.name = metadata.name;
         let newState;
         OptionFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

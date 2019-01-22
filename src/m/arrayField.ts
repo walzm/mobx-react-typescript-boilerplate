@@ -1,11 +1,10 @@
 import { IFieldAllMetadata } from "./commonModelTypes";
 import { observable, IObservableArray } from "mobx";
 import { BaseFieldMetadataProperties, IBaseFieldMetadata, IBaseField, BaseField } from "./baseField";
-import { IComplexType, createModelInstance } from "./complexType";
+import { IComplexType, createModelInstance, IModelContext } from "./complexType";
 
 export type ReadonlyArrayInnerType<T> = T extends ReadonlyArray<infer U> ? U : never;
 export type ArrayFieldInnerType<T> = T extends IArrayField<infer U> ? U : never;
-
 
 export interface IArrayField<TComplexType extends IComplexType> extends IBaseField {
     setDisabled(disabled: boolean);
@@ -174,6 +173,7 @@ export class ArrayField<TComplexType extends IComplexType> extends BaseField imp
     }
 
     applyMetadata(metadata: IFieldAllMetadata) {
+        this.name = metadata.name;
         let newState;
         ArrayFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {
@@ -212,9 +212,8 @@ export class ArrayField<TComplexType extends IComplexType> extends BaseField imp
             }
         })
         let newItems = (snapshot.items || []).map((snapshotItem) => {
-            let item = createModelInstance(this.itemCtor);
+            let item = createModelInstance(this.itemCtor, this, (this.parent as any).modelContext);
             item.applySnapshot(snapshotItem);
-            (item as any).$parent = this;
             return item;
         });
         if (this.state.items.length !== newItems.length) {
@@ -236,9 +235,8 @@ export class ArrayField<TComplexType extends IComplexType> extends BaseField imp
     }
     applyTransportModel(transportModel: any) {
         let newItems = transportModel && transportModel.map && transportModel.map((transportModelItem) => {
-            let item = createModelInstance(this.itemCtor);
+            let item = createModelInstance(this.itemCtor, this, (this.parent as any).modelContext);
             item.applyTransportModel(transportModelItem);
-            (item as any).$parent = this;
             return item;
         });
         if (newItems != null) {
@@ -247,9 +245,7 @@ export class ArrayField<TComplexType extends IComplexType> extends BaseField imp
     }
     public append(item?: TComplexType): TComplexType {
         if (item == null) {
-            let ctor = this.itemCtor;
-            item = createModelInstance(ctor);
-            (item as any).$parent = this;
+            item = createModelInstance(this.itemCtor, this, (this.parent as any).modelContext);
         }
         this.state.items.push(item);
         return item;

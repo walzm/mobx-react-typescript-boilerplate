@@ -49,6 +49,7 @@ export class IntegerField extends BaseValueField<number> implements IIntegerFiel
         }
     }
     applyMetadata(metadata: IFieldAllMetadata) {
+        this.name = metadata.name;
         let newState;
         IntegerFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {

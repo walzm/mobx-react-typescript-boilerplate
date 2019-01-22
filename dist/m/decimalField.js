@@ -52,6 +52,7 @@ export class DecimalField extends BaseValueField {
         }
     }
     applyMetadata(metadata) {
+        this.name = metadata.name;
         let newState;
         DecimalFieldMetadataProperties.forEach((property) => {
             if (property in metadata && this.state[property] !== metadata[property]) {
