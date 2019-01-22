@@ -149,5 +149,6 @@ export function createModelInstance<TComplexType extends IComplexType>(complexTy
         instanceAsAny.modelContext = modelContext;
         modelContext && (modelContext as ModelContext).fireOnCreateInstance(complexType, instance);
     }
+    console.log(instance);
     return instance;
 }

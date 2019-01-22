@@ -5,13 +5,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { CustomerTransportModel } from "./customerData";
-import { autorun } from "mobx";
 import { field, ComplexType, createModelInstance, createModelContext } from "./m/complexType";
 import { TextField } from "./m/textField";
 import { BooleanField } from "./m/booleanField";
 import { ComplexField } from "./m/complexField";
 import { ReferenceField } from "./m/referenceField";
 import { ArrayField } from "./m/arrayField";
+import { autorun } from "mobx";
 export class Address extends ComplexType {
     constructor() {
         super(...arguments);
@@ -282,73 +282,6 @@ __decorate([
         canDelete: true
     })
 ], CustomerExt.prototype, "addresses", void 0);
-let log = null;
-function measure(name, func) {
-    let start = performance.now();
-    console.log("----> " + name);
-    let ret = func();
-    let end = performance.now();
-    console.log("<--- " + (end - start) + "ms");
-    return ret;
-}
-let customer = createModelInstance(CustomerExt);
-let snap1 = measure("write empty snapshot 1", () => customer.writeSnapshot());
-let tm1 = measure("write empty transport model 1", () => customer.writeTransportModel());
-measure("apply default tm", () => customer.applyTransportModel(CustomerTransportModel));
-console.log(customer);
-tm1 = measure("write default tm", () => customer.writeTransportModel());
-console.log(tm1);
-let model = JSON.parse(JSON.stringify(CustomerTransportModel));
-for (let a = 0; a < 5; a++) {
-    model.addresses = [...model.addresses, ...model.addresses];
-}
-log && log("Addresses: " + model.addresses.length);
-customer.applyTransportModel(model);
-customer.updateOriginalValue();
-let snap2 = measure("write snapshot 2", () => customer.writeSnapshot());
-let counter = 0;
-function hook(customer) {
-    log && log("hook start");
-    counter = 0;
-    autorun(() => {
-        log && log("Addresses: " + customer.addresses.items.length);
-        customer.addresses.items.forEach((item, index) => {
-            let perRow = 0;
-            item.getFieldNames().forEach((fieldName) => {
-                if (fieldName === "address") {
-                    item.address.item.getFieldNames().forEach((fieldName) => {
-                        perRow++;
-                        autorun(() => {
-                            let field = item.address.item[fieldName].state;
-                            let val = field.value;
-                            log && log(index + ": address." + fieldName + ": " + val);
-                            counter++;
-                        });
-                    });
-                }
-                else {
-                    perRow++;
-                    autorun(() => {
-                        let field = item[fieldName].state;
-                        let val = field.value;
-                        log && log(index + ": " + fieldName + ": " + val);
-                        counter++;
-                    });
-                }
-            });
-        });
-    });
-    let perCustomer = 0;
-    customer.getFieldNames().forEach((fieldName) => {
-        perCustomer++;
-        autorun(() => {
-            let field = customer[fieldName].state;
-            let val = field.value;
-            counter++;
-        });
-    });
-    log && log("hook end");
-}
 let modelContext = createModelContext();
 modelContext.onCreateInstance(CustomerExt, (instance) => {
     instance.onValueChanged("matchcode", (target, value, previousValue, propertyName) => {
@@ -364,28 +297,48 @@ modelContext.onCreateInstance(CustomerAddressExt, (instance) => {
         console.log("Alt: " + previousValue);
         if (value) {
             target.isDeliveryAddress.setValue(true);
+            let customer = target.findClosest(CustomerExt);
+            if (customer) {
+                customer.addresses.items.filter(address => address !== target).forEach(address => address.isDefaultDeliveryAddress.setValue(false));
+            }
         }
-        let containingCustomer = instance.findClosest(CustomerExt);
-        containingCustomer && containingCustomer.matchcode.setValue("Super", true);
     });
 });
 let customer2 = createModelInstance(CustomerExt, null, modelContext);
 customer2.applyTransportModel(CustomerTransportModel);
+console.log(customer2.addresses.items.map(item => Object.keys(item).filter(key => key.startsWith("is")).reduce((p, c) => { p[c] = item[c].getValue(); return p; }, {})));
+autorun(() => console.log(customer2.matchcode.state.value));
 customer2.matchcode.setValue("123", true);
-customer2.addresses.items[1].isDeliveryAddress.setValue(false);
-customer2.addresses.items[1].isDefaultDeliveryAddress.setValue(false);
 customer2.addresses.items[1].isDefaultDeliveryAddress.setValue(true, true);
-console.log(customer2.addresses.items[1].isDeliveryAddress.state.value);
-customer2 = createModelInstance(CustomerExt);
-counter = 0;
-hook(customer2);
-console.log("hooked");
-measure("apply snapshot 4", () => customer2.applySnapshot(snap2));
-log = console.log;
-log && log(counter);
-log && log(snap2);
-log && log(customer2);
-measure("update value", () => customer2.addresses.items[0].address.item.city.setValue("xx"));
-log && log(counter);
-measure("update value array", () => customer2.addresses.items[63].address.item.city.setValue("xx"));
-log && log(counter);
+console.log(customer2.addresses.items.map(item => Object.keys(item).filter(key => key.startsWith("is")).reduce((p, c) => { p[c] = item[c].getValue(); return p; }, {})));
+class ModelBasedViewLogic extends ComplexType {
+    constructor(modelCtor) {
+        super();
+        this.modelCtor = modelCtor;
+        this.model = new ComplexField(this.modelCtor);
+    }
+}
+class ListDetailEditModel extends ComplexType {
+    constructor(listItemCtor, detailItemCtor) {
+        super();
+        this.listItemCtor = listItemCtor;
+        this.detailItemCtor = detailItemCtor;
+        this.list = new ArrayField(this.listItemCtor);
+        this.detail = new ComplexField(this.detailItemCtor);
+    }
+}
+class ListDetailModelEditView extends ModelBasedViewLogic {
+    constructor(listItemCtor, detailItemCtor) {
+        super(new ListDetailEditModel(listItemCtor, detailItemCtor));
+        this.listItemCtor = listItemCtor;
+        this.detailItemCtor = detailItemCtor;
+    }
+}
+class CustomerEditView extends ListDetailModelEditView {
+    constructor(listItemCtor, detailItemCtor) {
+        super(listItemCtor, detailItemCtor);
+        this.listItemCtor = listItemCtor;
+        this.detailItemCtor = detailItemCtor;
+    }
+}
+let cev = new CustomerEditView(CustomerExt, CustomerExt);

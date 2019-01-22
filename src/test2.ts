@@ -1,10 +1,11 @@
 import { CustomerTransportModel } from "./customerData";
-import { field, ComplexType, createModelInstance, createModelContext } from "./m/complexType";
+import { field, ComplexType, createModelInstance, createModelContext, IComplexType, IModelContext } from "./m/complexType";
 import { TextField } from "./m/textField";
 import { BooleanField } from "./m/booleanField";
-import { ComplexField } from "./m/complexField";
+import { ComplexField, IComplexField } from "./m/complexField";
 import { ReferenceField } from "./m/referenceField";
 import { ArrayField } from "./m/arrayField";
+import { autorun } from "mobx";
 
 export class Address extends ComplexType {
     @field({
@@ -200,6 +201,7 @@ export class CustomerExt extends Customer {
     })
     addresses = new ArrayField(CustomerAddressExt);
 }
+/*
 let log = null;
 
 function measure(name: string, func: () => any) {
@@ -305,23 +307,69 @@ modelContext.onCreateInstance(CustomerAddressExt, (instance) => {
         console.log("Alt: " + previousValue);
         if (value) {
             target.isDeliveryAddress.setValue(true);
-            let customer = instance.findClosest(CustomerExt);
+            let customer = target.findClosest(CustomerExt);
             if (customer) {
                 customer.addresses.items.filter(address => address !== target).forEach(address => address.isDefaultDeliveryAddress.setValue(false));
             }
         }
     });
 });
+
+
 //customer2.matchcode.
+/*
 let customer2 = createModelInstance(CustomerExt, null, modelContext);
 customer2.applyTransportModel(CustomerTransportModel);
+
 console.log(customer2.addresses.items.map(item => Object.keys(item).filter(key => key.startsWith("is")).reduce((p, c) => { p[c] = item[c].getValue(); return p; }, {})));
+
+autorun(() => console.log(customer2.matchcode.state.value));
 
 customer2.matchcode.setValue("123", true);
 
 customer2.addresses.items[1].isDefaultDeliveryAddress.setValue(true, true);
 console.log(customer2.addresses.items.map(item => Object.keys(item).filter(key => key.startsWith("is")).reduce((p, c) => { p[c] = item[c].getValue(); return p; }, {})));
+*/
 
+
+class ModelBasedViewLogic<TModel extends ComplexType> extends ComplexType {
+    constructor(protected modelCtor: new () => TModel) {
+        super();
+    }
+    initViewLogic() {
+        this.initModel();
+    }
+    initModel() {
+        let modelContext = this.getModelContext();
+        this.model = createModelInstance(this.modelCtor, null, modelContext);
+    }
+    getModelContext(): IModelContext {
+        return null;
+    }
+    model: TModel;
+}
+
+class ListDetailEditModel<TListType extends IComplexType, TDetailType extends IComplexType> extends ComplexType {
+    constructor(protected listItemCtor: new () => TListType, protected detailItemCtor: new () => TDetailType) {
+        super();
+    }
+    @field()
+    readonly list = new ArrayField(this.listItemCtor);
+    @field()
+    readonly detail = new ComplexField(this.detailItemCtor);
+}
+
+class ListDetailEditViewLogic<TListType extends IComplexType, TDetailType extends IComplexType> extends ModelBasedViewLogic<ListDetailEditModel<TListType, TDetailType>> {
+    constructor(protected listItemCtor: new () => TListType, protected detailItemCtor: new () => TDetailType) {
+        super(ListDetailEditModel.bind(ListDetailEditModel, listItemCtor, detailItemCtor));
+    }
+}
+
+class CustomerEditViewLogic extends ListDetailEditViewLogic<CustomerExt, CustomerExt> {
+}
+let cev = new CustomerEditViewLogic(CustomerExt, CustomerExt);
+cev.initViewLogic();
+console.log(cev);
 
 /*
 measure("apply snapshot 1", () => customer2.applySnapshot(snap2));
